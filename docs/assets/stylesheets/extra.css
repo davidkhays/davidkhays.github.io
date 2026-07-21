@@ -1,3 +1,7 @@
 .md-tabs__list {
   justify-content: center;
 }
+
+.md-footer-meta__inner {
+  justify-content: flex-start;
+}
