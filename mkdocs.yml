@@ -1,0 +1,25 @@
+site_name: David K. Hays
+site_url: https://davidkhays.com
+plugins: []
+extra_css:
+  - assets/stylesheets/extra.css
+theme:
+  name: material
+  palette:
+    - scheme: default
+      toggle:
+        icon: material/weather-night
+        name: Switch to dark mode
+    - scheme: slate
+      toggle:
+        icon: material/weather-sunny
+        name: Switch to light mode
+  features:
+    - navigation.tabs
+nav:
+  - Home: index.md
+  - About: about.md
+  - Gallery: gallery.md
+  - EPILOGUE: epilogue/index.md
+  - OFF-SYLLABUS: off-syllabus/index.md
+  - Store: store.md
