@@ -1,7 +1,353 @@
-.md-tabs__list {
-  justify-content: center;
+/* --- Monochrome palette --------------------------------------------------------------------
+   Material's link/accent color (hover, active nav item, focus rings) defaults to indigo/blue
+   from its built-in primary/accent palette and doesn't have a clean "just make it black" named
+   option — the closest built-in choice (primary: black) still hardcodes indigo back in for
+   --md-typeset-a-color as a special case, and accent has no black/white entry at all. Overriding
+   the resulting variables directly instead, site-wide, per SITEMAP's plain black/gray/white look.
+   Targets `body` specifically, not :root: Material's palette JS sets
+   data-md-color-primary="indigo" (the default, since we don't configure one) directly on <body>,
+   and a rule's OWN declaration on an element always wins over an inherited value from an ancestor
+   regardless of the ancestor rule's specificity or !important — so overriding at :root never
+   reached body's subtree. !important here beats that (non-important) indigo rule since both now
+   target body directly, where importance is what decides the winner. */
+body {
+  --md-accent-fg-color: var(--md-default-fg-color) !important;
+  --md-accent-fg-color--transparent: var(--md-default-fg-color--lightest) !important;
+  --md-typeset-a-color: var(--md-default-fg-color) !important;
 }
 
+/* --- Mobile nav drawer ------------------------------------------------------------------------
+   Only reachable below the 76.25em breakpoint where the header nav switches to the hamburger
+   (see .dkh-nav below) — otherwise unstyled, so it still looked like stock Material (indigo
+   title band, blue hover/active links) next to this site's plain monochrome header nav. */
+/* No site-name text next to the logo here anymore (see overrides/partials/nav.html) — Material's
+   fixed 5.6rem title height was sized for that text plus the logo, so shrink it down. Material
+   positions the logo `<a>` with position:absolute (own top/left offsets, ignoring this label's
+   padding entirely), so an auto height collapses to just the padding with zero content height —
+   set an explicit height instead, sized to clear the (now larger, 3.25rem) icon plus breathing
+   room before the divider/first nav item below it. */
+.md-nav--primary .md-nav__title[for="__drawer"] {
+  background-color: var(--md-default-bg-color);
+  color: var(--md-default-fg-color);
+  height: 6.5rem;
+  padding: 0;
+}
+/* Match .dkh-nav__link's text styling exactly (font-size/weight/letter-spacing/transform/opacity)
+   so the drawer reads as the same nav, not a different component. */
+.md-nav--primary .md-nav__link {
+  font-size: 0.78rem;
+  font-weight: 500;
+  letter-spacing: 0.03em;
+  text-transform: uppercase;
+  opacity: 0.7;
+}
+.md-nav--primary .md-nav__link:hover,
+.md-nav--primary .md-nav__item--active > .md-nav__link {
+  opacity: 1;
+}
+
+/* --- Footer -----------------------------------------------------------------------------------
+   Material's default footer is a heavy near-black band (--md-footer-bg-color) regardless of
+   light/dark scheme — jarring against this site's plain page background. Teddy's footer has no
+   band at all: copyright + social icons sit directly on the page in the page's own text color
+   (his index.css .copyright/.socialpar), just generously spaced. Reused that approach here. */
+.md-footer,
+.md-footer-meta {
+  background-color: transparent;
+}
+.md-footer {
+  color: var(--md-default-fg-color);
+}
 .md-footer-meta__inner {
   justify-content: flex-start;
+  align-items: center;
+  padding: 1.5rem 1.75rem;
+}
+.md-copyright {
+  color: var(--md-default-fg-color);
+  opacity: 0.6;
+}
+.md-copyright__highlight {
+  color: var(--md-default-fg-color);
+}
+.md-social__link svg {
+  fill: var(--md-default-fg-color);
+  opacity: 0.75;
+  transition: opacity 0.2s ease;
+}
+.md-social__link:hover svg {
+  opacity: 1;
+}
+
+/* --- Full-bleed content area ------------------------------------------------------------------
+   Material sizes .md-content for a two-sidebar docs layout even with both sidebars hidden, which
+   left our full-width sections double-padded and off-center. Reset to full width here (site-wide,
+   not just the home page) since every future page reuses this same header/layout shell.
+   .md-main__inner is a flex row (not grid), so a display:none sidebar already drops out of the
+   flow on its own at desktop width — no need to also zero .md-sidebar's width, which would break
+   the mobile drawer (a position:fixed panel that depends on its own 12.1rem width to render). */
+.md-main__inner { margin: 0; max-width: none; }
+.md-content { max-width: none; }
+.md-content__inner { max-width: none; margin: 0; padding: 0; }
+.md-content__inner::before { height: 0; }
+
+/* No in-page TOC anywhere on this site (nav lives in the header, not a secondary sidebar).
+   !important: Material's own `.md-sidebar--secondary:not([hidden]){display:block}` (inside its
+   min-width:60em block) outranks a plain class selector and was winning at common desktop widths
+   (>=60em but <76.25em), silently reserving its 12.1rem column and pushing/off-centering the
+   full-bleed content next to it. */
+.md-sidebar--secondary { display: none !important; }
+/* Primary sidebar: only used as the off-canvas mobile drawer here (our own nav replaces its
+   desktop role), so hide it at the breakpoint where the condensed header nav takes over. */
+@media screen and (min-width: 76.25em) {
+  .md-sidebar--primary { display: none; }
+}
+
+/* --- Header: sticky, translucent/blurred, sits down from the very top, moves up + shrinks on
+   scroll --------------------------------------------------------------------------------------
+   Matches Teddy's header.css/index.css directly: a separate fixed, masked backdrop-blur layer
+   behind the header (mask-image on a plain element, unrelated to the blur itself), the header row
+   given real top padding so it isn't flush against the viewport edge, and a scroll-triggered
+   transform that pulls the whole row back up while the icon scales down — see .dkh-scrolled
+   (extra.js) for why that's a hand-written scroll listener rather than a Material CSS hook.
+   (An earlier attempt combined backdrop-filter + mask-image on one element and silently lost the
+   blur entirely in this sandbox's headless test browsers; that turned out to be a limitation of
+   those specific headless builds; kept as a fallback in mind if it ever recurs. Confirmed
+   correctly gradiated in an actual full  browser, matching Teddy's exact technique below.) */
+.dkh-header {
+  background: none;
+  color: var(--md-default-fg-color);
+  box-shadow: none;
+  transform: translateY(0);
+  transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+.dkh-scrolled .dkh-header {
+  transform: translateY(-1.5rem);
+}
+.dkh-header .md-header__inner {
+  position: relative;
+  padding-top: 2.75rem;
+  padding-bottom: 1rem;
+  transition: padding 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+.dkh-scrolled .dkh-header .md-header__inner {
+  padding-top: 1.5rem;
+  padding-bottom: 0.5rem;
+}
+.dkh-blur-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 9rem;
+  z-index: 3;
+  pointer-events: none;
+  backdrop-filter: blur(24px);
+  -webkit-backdrop-filter: blur(24px);
+  mask-image: linear-gradient(to bottom, black 0%, rgba(0, 0, 0, 0.9) 20%, rgba(0, 0, 0, 0.6) 45%, transparent 100%);
+  -webkit-mask-image: linear-gradient(to bottom, black 0%, rgba(0, 0, 0, 0.9) 20%, rgba(0, 0, 0, 0.6) 45%, transparent 100%);
+}
+.dkh-header .md-header__title {
+  display: none;
+}
+/* .md-header__title used to be the flex spacer pushing the palette toggle to the right edge;
+   hiding it collapses that gap, so restore it directly on the toggle form. */
+.dkh-header .md-header__inner > [data-md-component="palette"] {
+  margin-left: auto;
+}
+
+.dkh-logo-swap {
+  position: relative;
+  display: inline-block;
+  width: 3.25rem;
+  height: 3.25rem;
+  color: var(--md-default-fg-color);
+  transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+.dkh-scrolled .dkh-logo-swap {
+  transform: scale(0.8);
+}
+/* Beats Material's own `.md-header__button.md-logo svg { height:1.2rem; width:auto; fill:currentcolor }`
+   (meant for a single-color wordmark icon), which otherwise wins on specificity and both shrinks
+   this to 1.2rem and flood-fills the outline. */
+.md-header__button.md-logo .dkh-logo-swap svg {
+  position: absolute;
+  inset: 0;
+  display: block;
+  width: 100%;
+  height: 100%;
+  fill: none;
+  transition: opacity 0.15s ease;
+}
+.dkh-logo-swap__hover {
+  opacity: 0;
+}
+.md-header__button.md-logo:hover .dkh-logo-swap__base {
+  opacity: 0;
+}
+.md-header__button.md-logo:hover .dkh-logo-swap__hover {
+  opacity: 1;
+}
+
+/* --- Condensed, centered nav (desktop) -------------------------------------------------------
+   Absolutely centered on .md-header__inner so it stays centered regardless of how wide the logo
+   or the palette toggle are. Mobile keeps Material's default hamburger + drawer untouched. */
+.dkh-nav {
+  display: none;
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  transform: translate(-50%, -50%);
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  gap: 2.25rem;
+}
+@media screen and (min-width: 76.25em) {
+  .dkh-nav {
+    display: flex;
+  }
+}
+.dkh-nav__link {
+  color: var(--md-default-fg-color);
+  font-size: 0.78rem;
+  font-weight: 500;
+  letter-spacing: 0.03em;
+  text-transform: uppercase;
+  text-decoration: none;
+  opacity: 0.7;
+  transition: opacity 0.2s ease;
+}
+.dkh-nav__link:hover {
+  opacity: 1;
+}
+.dkh-nav__item--active .dkh-nav__link {
+  opacity: 1;
+}
+
+/* --- Home hero ---------------------------------------------------------------------------- */
+.dkh-hero {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 3rem 1.75rem 2.5rem;
+}
+/* .dkh-hero .dkh-hero__heading (not just .dkh-hero__heading): Material's `.md-typeset h1 { color:
+   var(--md-default-fg-color--light); font-size: 2em }` is a class+type selector, out-specificities
+   a single-class override — same pattern as the box title fix above. Its --light color is a muted
+   gray, not the full black this heading wants. */
+.dkh-hero .dkh-hero__heading {
+  font-size: 3em;
+  font-weight: 600;
+  line-height: 1.2;
+  color: var(--md-default-fg-color);
+  margin: 0 0 0.6em;
+  border-bottom: none;
+}
+.dkh-hero__typed {
+  font-weight: 600;
+  font-style: italic;
+}
+.dkh-hero__typed::after {
+  content: "";
+  display: inline-block;
+  width: 2px;
+  height: 0.9em;
+  margin-left: 2px;
+  background: currentColor;
+  vertical-align: -0.1em;
+  animation: dkh-caret 0.85s steps(1) infinite;
+}
+@keyframes dkh-caret {
+  0%, 49% { opacity: 1; }
+  50%, 100% { opacity: 0; }
+}
+.dkh-hero__sub {
+  font-size: 1.05em;
+  line-height: 1.7;
+  opacity: 0.75;
+  max-width: 42em;
+}
+
+/* --- Three-column boxes -------------------------------------------------------------------- */
+.dkh-columns {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: stretch;
+  gap: 1.5rem;
+  max-width: 1200px;
+  /* padding, not margin-bottom: Material's `.md-typeset > :last-child { margin-bottom: 0 }` zeroes
+     a trailing margin here (this is the last element on the page) but leaves padding alone. */
+  margin: 0 auto;
+  padding: 0 1.75rem 3rem;
+}
+.dkh-box {
+  flex: 1 1 280px;
+  border: 1.2px solid var(--md-default-fg-color--lighter);
+  border-radius: 20px;
+  background: var(--md-default-bg-color);
+  padding: 1.75rem 1.75rem 2rem;
+}
+/* .dkh-box .dkh-box__title (not just .dkh-box__title): Material's `.md-typeset h2 { font-size:
+   1.5625em; margin: 1.6em 0 .64em }` is a class+type selector, out-specificities a single-class
+   override, so both its size AND its 1.6em top margin were winning here — the top margin stacked
+   on top of the box's own padding-top (the bug just fixed), but the 1.5625em size was the one
+   already on screen and looked right, so it's kept explicitly rather than shrunk along with the
+   margin fix. */
+.dkh-box .dkh-box__title {
+  font-size: 1.5625em;
+  font-weight: 600;
+  margin: 0 0 1.1em;
+  border-bottom: none;
+}
+.dkh-box__list {
+  margin: 0;
+  padding-left: 1.1em;
+  font-size: 0.92em;
+  line-height: 1.65;
+  opacity: 0.85;
+}
+.dkh-box__list + .dkh-goals,
+.dkh-box__list + .dkh-countdowns {
+  margin-top: 1.5em;
+}
+
+.dkh-goal {
+  margin-bottom: 1.1em;
+}
+.dkh-goal:last-child {
+  margin-bottom: 0;
+}
+.dkh-goal__label {
+  display: flex;
+  justify-content: space-between;
+  font-size: 0.82em;
+  opacity: 0.8;
+  margin-bottom: 0.4em;
+}
+.dkh-progress {
+  height: 6px;
+  border-radius: 999px;
+  background: var(--md-default-fg-color--lightest);
+  overflow: hidden;
+}
+.dkh-progress__fill {
+  height: 100%;
+  border-radius: inherit;
+  background: var(--md-default-fg-color);
+  opacity: 0.75;
+}
+
+.dkh-countdown {
+  margin-bottom: 1.1em;
+}
+.dkh-countdown:last-child {
+  margin-bottom: 0;
+}
+.dkh-countdown__label {
+  font-size: 0.82em;
+  opacity: 0.7;
+}
+.dkh-countdown__value {
+  font-size: 1.3em;
+  font-weight: 600;
 }

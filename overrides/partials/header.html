@@ -1,0 +1,90 @@
+{#-
+  Overrides material/templates/partials/header.html (mkdocs-material 9.7.7).
+  Based on the stock partial; the only additions are the "dkh-" prefixed pieces:
+  the condensed centered nav list (desktop only — mobile keeps Material's default
+  drawer/hamburger, untouched) and a `dkh-header` marker class used by extra.css
+  for the blur + shrink-on-scroll treatment. Keep in sync with the stock partial
+  if upgrading mkdocs-material introduces new blocks here.
+-#}
+{% set class = "md-header dkh-header" %}
+{% if "navigation.tabs.sticky" in features %}
+  {% set class = class ~ " md-header--shadow md-header--lifted" %}
+{% elif "navigation.tabs" not in features %}
+  {% set class = class ~ " md-header--shadow" %}
+{% endif %}
+<header class="{{ class }}" data-md-component="header">
+  <nav class="md-header__inner md-grid" aria-label="{{ lang.t('header') }}">
+    <a href="{{ config.extra.homepage | d(nav.homepage.url, true) | url }}" title="{{ config.site_name | e }}" class="md-header__button md-logo" aria-label="{{ config.site_name }}" data-md-component="logo">
+      {% include "partials/logo.html" %}
+    </a>
+    <label class="md-header__button md-icon" for="__drawer">
+      {% set icon = config.theme.icon.menu or "material/menu" %}
+      {% include ".icons/" ~ icon ~ ".svg" %}
+    </label>
+
+    <!-- Condensed, centered nav (desktop only; see extra.css for the breakpoint) -->
+    <ul class="dkh-nav">
+      {% for nav_item in nav.items %}
+        {% if not nav_item.is_homepage %}
+          <li class="dkh-nav__item{{ ' dkh-nav__item--active' if nav_item.active else '' }}">
+            <a href="{{ nav_item.url | url }}" class="dkh-nav__link">{{ nav_item.title }}</a>
+          </li>
+        {% endif %}
+      {% endfor %}
+    </ul>
+
+    <div class="md-header__title" data-md-component="header-title">
+      <div class="md-header__ellipsis">
+        <div class="md-header__topic">
+          <span class="md-ellipsis">
+            {{ config.site_name }}
+          </span>
+        </div>
+        <div class="md-header__topic" data-md-component="header-topic">
+          <span class="md-ellipsis">
+            {% if page.meta and page.meta.title %}
+              {{ page.meta.title }}
+            {% else %}
+              {{ page.title }}
+            {% endif %}
+          </span>
+        </div>
+      </div>
+    </div>
+    {% if config.theme.palette %}
+      {% if not config.theme.palette is mapping %}
+        {% include "partials/palette.html" %}
+      {% endif %}
+    {% endif %}
+    {% if not config.theme.palette is mapping %}
+      {% include "partials/javascripts/palette.html" %}
+    {% endif %}
+    {% if config.extra.alternate %}
+      {% include "partials/alternate.html" %}
+    {% endif %}
+    {% if "material/search" in config.plugins %}
+      {% set search = config.plugins["material/search"] | attr("config") %}
+      {% if search.enabled %}
+        <label class="md-header__button md-icon" for="__search">
+          {% set icon = config.theme.icon.search or "material/magnify" %}
+          {% include ".icons/" ~ icon ~ ".svg" %}
+        </label>
+        {% include "partials/search.html" %}
+      {% endif %}
+    {% endif %}
+    {% if config.repo_url %}
+      <div class="md-header__source">
+        {% include "partials/source.html" %}
+      </div>
+    {% endif %}
+  </nav>
+  {% if "navigation.tabs.sticky" in features %}
+    {% if "navigation.tabs" in features %}
+      {% include "partials/tabs.html" %}
+    {% endif %}
+  {% endif %}
+</header>
+{#- Fixed backdrop-blur layer sitting behind the header (z-index in extra.css puts it below
+    .md-header, above page content) — see the .dkh-blur-overlay comment in extra.css for why this
+    is a separate element rather than blurring .md-header itself. -#}
+<div class="dkh-blur-overlay" aria-hidden="true"></div>
