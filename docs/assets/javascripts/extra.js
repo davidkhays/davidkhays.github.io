@@ -112,6 +112,45 @@
   setTimeout(tick, START_DELAY);
 })();
 
+// Hero "here" links -> matching nav pill item: hovering a "here" link in the hero paragraph glows
+// the nav item it points to (see .dkh-prism in extra.css), so the connection between the inline
+// mention and the actual nav destination is visually obvious. Matched by slug rather than exact
+// resolved URL: the target pages (about.md, gallery.md, etc.) don't exist yet, so mkdocs can't
+// compute a real URL for those nav entries and falls back to the raw declared path from
+// mkdocs.yml's nav: list ("about.md", "epilogue/index.md") instead of the eventual "about/",
+// "epilogue/" — slug-matching (strip .md / trailing "index" / slashes) works against both that
+// placeholder form and the real one once those pages exist, so this doesn't need revisiting later.
+(function () {
+  var sourceLinks = document.querySelectorAll(".dkh-hero__sub a[href]");
+  var navLinks = document.querySelectorAll(".dkh-nav__link[href]");
+  if (!sourceLinks.length || !navLinks.length) return;
+
+  function slugOf(href) {
+    return href
+      .replace(/^\.?\//, "")
+      .replace(/\.md$/, "")
+      .replace(/\/index$/, "")
+      .replace(/\/$/, "")
+      .toLowerCase();
+  }
+
+  sourceLinks.forEach(function (link) {
+    var targetSlug = slugOf(link.getAttribute("href"));
+    var match = null;
+    navLinks.forEach(function (navLink) {
+      if (slugOf(navLink.getAttribute("href")) === targetSlug) match = navLink;
+    });
+    if (!match) return;
+
+    link.addEventListener("mouseenter", function () {
+      match.classList.add("dkh-prism");
+    });
+    link.addEventListener("mouseleave", function () {
+      match.classList.remove("dkh-prism");
+    });
+  });
+})();
+
 // "Next" box countdowns: each .dkh-countdown carries a data-target ISO date-time WITH an explicit
 // UTC offset (e.g. "...+01:00") — a date-time string with no offset parses as the VIEWER's own
 // local time per the Date spec, so every visitor would see a different countdown to what's meant

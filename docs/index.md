@@ -6,9 +6,8 @@ description: Placeholder description — David K. Hays' personal site.
 <section class="dkh-hero">
   <h1 class="dkh-hero__heading">Hi! I'm David, a <span id="dkh-typed" class="dkh-hero__typed"></span></h1>
   <p class="dkh-hero__sub">
-    Placeholder sentence one — who I am.<br>
-    Placeholder sentence two — what I care about.<br>
-    Placeholder sentence three — what I'm building.
+    I spent my formative years in Tokyo, experienced adolescence in Hawai'i, then moved to the UK to study the brain and behavior. I'm interested in all aspects of the human condition, but especially the neurobiology of reward and how it can be usurped — by disease and by design.<br><br>
+    You can learn more about me <a href="about/">here</a> and take a look at some of my photos <a href="gallery/">here</a>. As I architect my professional future, I'm also trying to create more consistently (and conscientiously!) <a href="epilogue/">here</a>, and I'm working on developing an accessible, foundation-level neuroscience curriculum <a href="off-syllabus/">here</a>.
   </p>
 </section>
 
@@ -16,15 +15,21 @@ description: Placeholder description — David K. Hays' personal site.
   <div class="dkh-box">
     <h2 class="dkh-box__title">Things I Believe</h2>
     <ul class="dkh-box__list">
-      <li>Placeholder belief one.</li>
-      <li>Placeholder belief two.</li>
-      <li>Placeholder belief three.</li>
-      <li>Placeholder belief four.</li>
+      <li>The human condition is unfathomably terrifying and equally beautiful.</li>
+      <li>Even if I die suddenly tomorrow, I am one of the luckiest people on Earth.</li>
+      <li>Fear of the event is worse than the event [<a href="https://www.ebay.com/itm/137132791289" target="_blank" rel="noopener noreferrer">Source</a>].</li>
+      <li>Time, comedy, and company are the best remedies for the heart.</li>
+      <li>Sometimes all you need is to call a friend. Or to talk to anyone at all!</li>
+      <li>Dichotomies are cognitively convenient but usually false and harmful.</li>
+      <li>Complaining is rarely more effective than acting or adapting.</li>
+      <li>Smiling at strangers makes the world a better place. :)</li>
+      <li>Ultimately, it’s all about love. No love, however brief, is wasted [<a href="https://x.com/louisethebaker/status/1379961867922239497" target="_blank" rel="noopener noreferrer">Source</a>].</li>
+      <li>Everything works out in the end.</li>
     </ul>
   </div>
 
   <div class="dkh-box">
-    <h2 class="dkh-box__title">Lately</h2>
+    <h2 class="dkh-box__title">Latest Updates</h2>
     <ul class="dkh-box__list">
       <li>Placeholder project one.</li>
       <li>Placeholder open question.</li>
@@ -46,7 +51,7 @@ description: Placeholder description — David K. Hays' personal site.
   </div>
 
   <div class="dkh-box">
-    <h2 class="dkh-box__title">Next</h2>
+    <h2 class="dkh-box__title">Looking Ahead</h2>
     <ul class="dkh-box__list">
       <li>Placeholder — what I'm looking forward to.</li>
     </ul>

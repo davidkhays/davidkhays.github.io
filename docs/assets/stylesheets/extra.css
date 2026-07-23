@@ -49,10 +49,86 @@ body {
   letter-spacing: 0.03em;
   text-transform: uppercase;
   opacity: 0.7;
+  /* Material's own .md-nav__link is display:flex (not a plain text block), so text-align alone
+     wouldn't center it — justify-content is what actually centers a flex child's content. */
+  justify-content: center;
+  text-align: center;
 }
 .md-nav--primary .md-nav__link:hover,
 .md-nav--primary .md-nav__item--active > .md-nav__link {
   opacity: 1;
+}
+/* Nicer opening motion for the drawer panel itself (Material's default is a flatter linear-ish
+   slide), plus a staggered fade+slide-up entrance for each nav item once it's open — closer to
+   the "flow" Teddy's mobile nav has, without copying his markup (his is a full-screen overlay
+   with a skewed sweep-in per item; this site's drawer is Material's off-canvas sidebar, so the
+   same effect is approximated as a panel ease + per-item stagger instead).
+   #__drawer and .md-container are true siblings directly under <body> (see base.html), so
+   :checked ~ .md-container correctly scopes this to only when the drawer is open, and re-fires
+   the animation fresh each time it's reopened. */
+.md-sidebar--primary {
+  transition: transform 0.4s cubic-bezier(0.16, 1, 0.3, 1), box-shadow 0.4s ease;
+}
+@keyframes dkh-nav-item-in {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+#__drawer:checked ~ .md-container .md-nav--primary .md-nav__list > .md-nav__item {
+  animation: dkh-nav-item-in 0.45s cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+#__drawer:checked ~ .md-container .md-nav--primary .md-nav__list > .md-nav__item:nth-child(1) { animation-delay: 0.08s; }
+#__drawer:checked ~ .md-container .md-nav--primary .md-nav__list > .md-nav__item:nth-child(2) { animation-delay: 0.12s; }
+#__drawer:checked ~ .md-container .md-nav--primary .md-nav__list > .md-nav__item:nth-child(3) { animation-delay: 0.16s; }
+#__drawer:checked ~ .md-container .md-nav--primary .md-nav__list > .md-nav__item:nth-child(4) { animation-delay: 0.2s; }
+#__drawer:checked ~ .md-container .md-nav--primary .md-nav__list > .md-nav__item:nth-child(5) { animation-delay: 0.24s; }
+
+/* --- Header layout below the 76.25em breakpoint (hamburger visible, condensed nav hidden) -----
+   Default flex order would put the hamburger right after the logo (near the left), since it's
+   second in the header's DOM order. Teddy's mobile header instead clusters the menu control on
+   the right, next to the theme toggle — reordered here with the `order` property rather than
+   moving it in the template, since nothing else depends on its DOM position. This whole range
+   (down to true mobile) gets the reordered hamburger; the logo stays untouched here — still
+   left-aligned in normal flex flow, same as full desktop — since "narrow desktop browser window"
+   isn't the same as "phone", and it should only recenter once it actually is one (see the
+   37.5em breakpoint below, shared with the typing-effect line-wrap fix). */
+@media screen and (max-width: 76.234375em) {
+  .md-header__button.md-logo {
+    /* Material hides the logo entirely in this width range by default (`.md-logo{display:none}`),
+       expecting the site-title text to show instead — but we hide that title text too (see
+       .dkh-header .md-header__title above), so without this the logo just vanishes here. */
+    display: block;
+  }
+  .md-header__button[for="__drawer"] {
+    order: 2;
+    align-self: center;
+    transform: translateY(-0.75rem);
+    margin-left: 0.5rem;
+  }
+}
+/* True mobile only: center the logo instead of leaving it left-aligned. Pulling it out of flex
+   flow (so hamburger + toggle can still sit independently at the right) drops the row's natural
+   height (which otherwise comes from the tall 6.5rem icon), so min-height keeps the header from
+   collapsing — sized a bit past the icon itself, not exactly to it, so centering it doesn't need
+   an extra offset to avoid clipping its top edge against the row's bounds (an earlier attempt
+   reused the nav's -0.75rem "nudge up" offset here too, which was only ever meant to compensate
+   for the icon pushing the *nav* down, not for the icon centering itself — self-referential, so
+   it just pushed the icon partly above the header instead). */
+@media screen and (max-width: 37.5em) {
+  .dkh-header .md-header__inner {
+    min-height: 7rem;
+  }
+  .md-header__button.md-logo {
+    position: absolute;
+    left: 50%;
+    top: 50%;
+    transform: translate(-50%, -50%);
+  }
 }
 
 /* --- Full-bleed content area ------------------------------------------------------------------
@@ -107,7 +183,7 @@ body {
   transition: padding 0.3s cubic-bezier(0.4, 0, 0.2, 1);
 }
 .dkh-scrolled .dkh-header .md-header__inner {
-  padding-top: 0.75rem;
+  padding-top: 1.1rem;
   padding-bottom: 0.5rem;
 }
 .dkh-blur-overlay {
@@ -263,6 +339,60 @@ body {
   background-color: color-mix(in srgb, var(--md-default-fg-color) 6%, transparent);
 }
 
+/* Prism glow: toggled by extra.js when hovering the matching "here" link in the hero paragraph
+   (not on direct hover of the nav item itself — that keeps the plain highlight above). A rotating
+   conic-gradient traced as a thin RING around the pill's outline rather than a filled halo behind
+   it — the mask (two layers, one inset by `padding`, XORed via mask-composite:exclude) is what
+   keeps only that ring-width band visible instead of the whole gradient disc. Reads as a shifting
+   rainbow catching the edge of frosted glass, in the spirit of iOS's "Liquid Glass" specular
+   highlights, without the heavier filled-glow version's visual weight.
+   @property registers the angle as an animatable <angle> — plain custom properties don't
+   interpolate, so without it the gradient would just jump between keyframes instead of sweeping
+   smoothly. */
+@property --dkh-prism-angle {
+  syntax: "<angle>";
+  inherits: false;
+  initial-value: 0deg;
+}
+.dkh-nav__link.dkh-prism {
+  opacity: 1;
+}
+.dkh-nav__link.dkh-prism::before {
+  content: "";
+  position: absolute;
+  inset: -2px;
+  z-index: -1;
+  padding: 3px;
+  border-radius: inherit;
+  background: conic-gradient(
+    from var(--dkh-prism-angle),
+    #ff5f6d,
+    #ffc371,
+    #a8ff78,
+    #47e0a0,
+    #4facfe,
+    #a78bfa,
+    #ff5f6d
+  );
+  -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+  -webkit-mask-composite: xor;
+  mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+  mask-composite: exclude;
+  filter: blur(0.5px) saturate(1.5);
+  opacity: 0.9;
+  animation: dkh-prism-spin 2.5s linear infinite;
+}
+@keyframes dkh-prism-spin {
+  to {
+    --dkh-prism-angle: 360deg;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .dkh-nav__link.dkh-prism::before {
+    animation: none;
+  }
+}
+
 /* --- Home hero ---------------------------------------------------------------------------- */
 .dkh-hero {
   max-width: 1200px;
@@ -285,6 +415,17 @@ body {
   font-weight: 600;
   font-style: italic;
 }
+/* Mobile only: "Hi! I'm David, a" already fills the narrow width on its own, so the typed word
+   wraps to a line of its own — but WHICH line it wraps onto shifts as the word grows/shrinks
+   character by character (sometimes fitting the end of line 1, sometimes forced to line 2),
+   changing the heading's total height each keystroke and jolting everything below it up and down.
+   Forcing it onto its own line always (display:block) fixes the wrap point in place — only that
+   line's own width changes as it types, which doesn't move anything else. */
+@media screen and (max-width: 37.5em) {
+  .dkh-hero__typed {
+    display: block;
+  }
+}
 .dkh-hero__typed::after {
   content: "";
   display: inline-block;
@@ -304,6 +445,15 @@ body {
   line-height: 1.7;
   opacity: 0.75;
   max-width: 42em;
+}
+/* Material's base reset strips underlines from all links (a{text-decoration:none}); since these
+   links share the surrounding text's color (the site-wide monochrome override), an underline is
+   what actually marks them as clickable within a paragraph. Same reasoning applies to any inline
+   citation-style links inside the box lists (e.g. "[Source]"). */
+.dkh-hero__sub a,
+.dkh-box__list a {
+  text-decoration: underline;
+  text-underline-offset: 0.15em;
 }
 
 /* --- Three-column boxes -------------------------------------------------------------------- */
@@ -337,9 +487,18 @@ body {
   margin: 0 0 1.1em;
   border-bottom: none;
 }
-.dkh-box__list {
-  margin: 0;
-  padding-left: 1.1em;
+/* `[dir=ltr] .md-typeset ul { margin-left: .625em }` is an attribute+class+type selector
+   (0,2,1) — outranks a two-class override (0,2,0) even though two classes reads like it "should"
+   win; !important is what actually settles it, verified by measuring computed styles rather than
+   eyeballing it (an earlier "looks flush" claim here was wrong, and so was a follow-up attempt
+   that shifted the whole list further left — that aligned the TEXT with the heading, past where
+   the bullet itself needed to land). margin:0 alone puts the UL's own box edge exactly under the
+   heading; outside-position then draws the bullet right at that edge, which is what "flush" here
+   actually means — the ~1em gap after it before the text is the marker's own reserved width, not
+   extra indent. */
+.dkh-box .dkh-box__list {
+  margin: 0 !important;
+  padding-left: 0;
   font-size: 0.92em;
   line-height: 1.65;
   opacity: 0.85;
