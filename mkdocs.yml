@@ -9,9 +9,6 @@ extra_javascript:
   - assets/javascripts/extra.js
 extra:
   generator: false
-  social:
-  - icon: fontawesome/brands/github
-    link: https://github.com/davidkhays
 theme:
   name: material
   custom_dir: overrides

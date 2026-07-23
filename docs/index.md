@@ -51,12 +51,12 @@ description: Placeholder description — David K. Hays' personal site.
       <li>Placeholder — what I'm looking forward to.</li>
     </ul>
     <div class="dkh-countdowns">
-      <div class="dkh-countdown" data-target="2026-09-26T00:00:00">
-        <div class="dkh-countdown__label">Selina time</div>
+      <div class="dkh-countdown" data-target="2026-09-24T00:00:00+01:00">
+        <div class="dkh-countdown__label">Turning 22</div>
         <div class="dkh-countdown__value">—</div>
       </div>
-      <div class="dkh-countdown" data-target="2027-06-01T00:00:00">
-        <div class="dkh-countdown__label">Another placeholder day</div>
+      <div class="dkh-countdown" data-target="2026-09-26T10:30:00+01:00">
+        <div class="dkh-countdown__label">Graduating from Oxford</div>
         <div class="dkh-countdown__value">—</div>
       </div>
     </div>

@@ -25,6 +25,50 @@
   apply();
 })();
 
+// Face icon: blinks on its own (briefly swaps to the eyes-closed artwork, same as the hover
+// state, just triggered by a class instead of :hover — see .dkh-blink in extra.css). Randomized
+// gap between blinks, with an occasional quick double-blink, reads more like an actual blink than
+// a fixed metronome interval would.
+(function () {
+  var els = document.querySelectorAll(".dkh-logo-swap");
+  if (!els.length) return;
+
+  var BLINK_DURATION = 100;
+  var DOUBLE_BLINK_GAP = 120;
+  var DOUBLE_BLINK_CHANCE = 0.4;
+  var MIN_GAP = 6000;
+  var MAX_GAP = 14000;
+
+  function setClosed(closed) {
+    els.forEach(function (el) {
+      el.classList.toggle("dkh-blink", closed);
+    });
+  }
+
+  function doBlink(done) {
+    setClosed(true);
+    setTimeout(function () {
+      setClosed(false);
+      if (done) setTimeout(done, DOUBLE_BLINK_GAP);
+    }, BLINK_DURATION);
+  }
+
+  function scheduleNext() {
+    var delay = MIN_GAP + Math.random() * (MAX_GAP - MIN_GAP);
+    setTimeout(function () {
+      if (Math.random() < DOUBLE_BLINK_CHANCE) {
+        doBlink(function () {
+          doBlink(scheduleNext);
+        });
+      } else {
+        doBlink(scheduleNext);
+      }
+    }, delay);
+  }
+
+  scheduleNext();
+})();
+
 // Hero role text: types a word, pauses, deletes it, moves to the next. Hand-written in place of a
 // typing-effect library — timings mirror Teddy's typed.js config (startDelay 700, type/backSpeed 60,
 // backDelay 1200, loop) so the feel matches, without adding a dependency.
@@ -68,26 +112,45 @@
   setTimeout(tick, START_DELAY);
 })();
 
-// "Next" box countdowns: each .dkh-countdown carries a data-target ISO date; fill in "X days" (set
-// once on load — the site has no need for a live-ticking clock here).
+// "Next" box countdowns: each .dkh-countdown carries a data-target ISO date-time WITH an explicit
+// UTC offset (e.g. "...+01:00") — a date-time string with no offset parses as the VIEWER's own
+// local time per the Date spec, so every visitor would see a different countdown to what's meant
+// to be the same real-world moment. An explicit offset fixes the target to one moment for
+// everyone. Re-renders every 30s (not just once on load) now that it shows minutes, not just days.
 (function () {
-  var MS_PER_DAY = 24 * 60 * 60 * 1000;
+  var MS_PER_MINUTE = 60 * 1000;
+  var MS_PER_HOUR = 60 * MS_PER_MINUTE;
+  var MS_PER_DAY = 24 * MS_PER_HOUR;
 
-  document.querySelectorAll(".dkh-countdown[data-target]").forEach(function (el) {
-    var valueEl = el.querySelector(".dkh-countdown__value");
-    if (!valueEl) return;
+  function render() {
+    document.querySelectorAll(".dkh-countdown[data-target]").forEach(function (el) {
+      var valueEl = el.querySelector(".dkh-countdown__value");
+      if (!valueEl) return;
 
-    var target = new Date(el.getAttribute("data-target"));
-    var days = Math.ceil((target - new Date()) / MS_PER_DAY);
+      var target = new Date(el.getAttribute("data-target"));
+      var diff = target - new Date();
 
-    if (isNaN(days)) {
-      valueEl.textContent = "—";
-    } else if (days > 0) {
-      valueEl.textContent = days + (days === 1 ? " day" : " days");
-    } else if (days === 0) {
-      valueEl.textContent = "today";
-    } else {
-      valueEl.textContent = "passed";
-    }
-  });
+      if (isNaN(diff)) {
+        valueEl.textContent = "—";
+        return;
+      }
+      if (diff <= 0) {
+        valueEl.textContent = diff > -MS_PER_MINUTE ? "now" : "passed";
+        return;
+      }
+
+      var days = Math.floor(diff / MS_PER_DAY);
+      var hours = Math.floor((diff % MS_PER_DAY) / MS_PER_HOUR);
+      var minutes = Math.floor((diff % MS_PER_HOUR) / MS_PER_MINUTE);
+
+      var parts = [];
+      if (days > 0) parts.push(days + "d");
+      if (days > 0 || hours > 0) parts.push(hours + "h");
+      parts.push(minutes + "m");
+      valueEl.textContent = parts.join(" ");
+    });
+  }
+
+  render();
+  setInterval(render, 30000);
 })();

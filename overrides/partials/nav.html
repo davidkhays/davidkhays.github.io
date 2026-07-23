@@ -1,8 +1,11 @@
 {#-
-  Overrides material/templates/partials/nav.html (mkdocs-material 9.7.7).
-  Only change from the stock partial: drops the {{ config.site_name }} text next to the logo in
-  the mobile drawer's title row — the header face icon already stands alone with no site-name
-  text next to it, so the drawer matched that instead of repeating "David K. Hays".
+  Overrides material/templates/partials/nav.html (mkdocs-material 9.7.7). Two changes from stock:
+  - Drops the {{ config.site_name }} text next to the logo in the drawer's title row — the header
+    face icon already stands alone with no site-name text next to it, so the drawer matches that
+    instead of repeating "David K. Hays".
+  - Skips the Home entry in the nav list — the logo above the list already links home, so listing
+    it again as a nav item (matching the desktop header nav, which skips it the same way) is
+    redundant. First item is About.
 -#}
 {% import "partials/nav-item.html" as item with context %}
 {% set class = "md-nav md-nav--primary" %}
@@ -25,8 +28,10 @@
   {% endif %}
   <ul class="md-nav__list" data-md-scrollfix>
     {% for nav_item in nav.items %}
-      {% set path = "__nav_" ~ loop.index %}
-      {{ item.render(nav_item, path, 1) }}
+      {% if not nav_item.is_homepage %}
+        {% set path = "__nav_" ~ loop.index %}
+        {{ item.render(nav_item, path, 1) }}
+      {% endif %}
     {% endfor %}
   </ul>
 </nav>
