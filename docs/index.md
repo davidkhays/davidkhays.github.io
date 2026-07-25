@@ -60,6 +60,7 @@ description: Placeholder description — David K. Hays' personal site.
       <li>Fear of the event is worse than the event. [<a href="https://www.ebay.com/itm/137132791289" target="_blank" rel="noopener noreferrer">Source</a>]</li>
       <li>Time, comedy, and company are the best medicines for the heart.</li>
       <li>Sometimes all you need is to call a friend. Or to talk to anyone at all!</li>
+      <li>Appearance has an underestimated influence on subjective perception.</li>
       <li>Dichotomies are cognitively convenient but usually false and harmful.</li>
       <li>Complaining is rarely more effective than acting or adapting.</li>
       <li>Changing the world is easier than it sounds. Wield this power gently.</li>
