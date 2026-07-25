@@ -88,3 +88,12 @@
     .md-header, above page content) — see the .dkh-blur-overlay comment in extra.css for why this
     is a separate element rather than blurring .md-header itself. -#}
 <div class="dkh-blur-overlay" aria-hidden="true"></div>
+{#- Mobile only (see extra.css): the header stops staying pinned on scroll to sidestep an iOS
+    Safari rendering bug, which means the hamburger drawer trigger scrolls away too. This button
+    (hidden until scrolled down a bit, see extra.js) is the way back to it on a long page without
+    swiping all the way back up by hand. -#}
+<button type="button" class="dkh-scrolltop" aria-label="Scroll to top">
+  <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+    <path d="M12 19V5M5 12l7-7 7 7" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+  </svg>
+</button>

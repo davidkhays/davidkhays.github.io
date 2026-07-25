@@ -25,6 +25,42 @@
   apply();
 })();
 
+// Scroll-to-top button (mobile only, see .dkh-scrolltop in extra.css): the mobile header scrolls
+// away with the page instead of staying pinned (see extra.css), so on a long page the hamburger
+// drawer trigger scrolls out of reach too. This button is the way back to it. Own threshold and
+// listener rather than reusing .dkh-scrolled above — that one's tuned to appear almost immediately
+// to trigger the header's shrink effect, this should only show once you're far enough down that
+// swiping back to the top by hand would actually be annoying.
+(function () {
+  var button = document.querySelector(".dkh-scrolltop");
+  if (!button) return;
+
+  var THRESHOLD = 400;
+  var ticking = false;
+
+  function apply() {
+    document.documentElement.classList.toggle("dkh-show-scrolltop", window.scrollY > THRESHOLD);
+    ticking = false;
+  }
+
+  window.addEventListener(
+    "scroll",
+    function () {
+      if (!ticking) {
+        window.requestAnimationFrame(apply);
+        ticking = true;
+      }
+    },
+    { passive: true }
+  );
+
+  button.addEventListener("click", function () {
+    window.scrollTo({ top: 0, behavior: "smooth" });
+  });
+
+  apply();
+})();
+
 // Face icon: blinks on its own (briefly swaps to the eyes-closed artwork, same as the hover
 // state, just triggered by a class instead of :hover — see .dkh-blink in extra.css). Randomized
 // gap between blinks, with an occasional quick double-blink, reads more like an actual blink than
@@ -45,6 +81,12 @@
     });
   }
 
+  function setInstant(instant) {
+    els.forEach(function (el) {
+      el.classList.toggle("dkh-blink-instant", instant);
+    });
+  }
+
   function doBlink(done) {
     setClosed(true);
     setTimeout(function () {
@@ -56,12 +98,17 @@
   function scheduleNext() {
     var delay = MIN_GAP + Math.random() * (MAX_GAP - MIN_GAP);
     setTimeout(function () {
+      setInstant(true);
+      function finish() {
+        setInstant(false);
+        scheduleNext();
+      }
       if (Math.random() < DOUBLE_BLINK_CHANCE) {
         doBlink(function () {
-          doBlink(scheduleNext);
+          doBlink(finish);
         });
       } else {
-        doBlink(scheduleNext);
+        doBlink(finish);
       }
     }, delay);
   }

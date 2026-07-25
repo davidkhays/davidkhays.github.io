@@ -17,32 +17,166 @@ body {
 }
 
 /* --- Mobile nav drawer ------------------------------------------------------------------------
-   Only reachable below the 76.25em breakpoint where the header nav switches to the hamburger
-   (see .dkh-nav below) — otherwise unstyled, so it still looked like stock Material (indigo
-   title band, blue hover/active links) next to this site's plain monochrome header nav. */
-/* No site-name text next to the logo here anymore (see overrides/partials/nav.html) — Material's
-   fixed 5.6rem title height was sized for that text plus the logo, so shrink it down. Material
-   positions the logo `<a>` with position:absolute (own top/left offsets, ignoring this label's
-   padding entirely), so an auto height collapses to just the padding with zero content height —
-   set an explicit height instead, sized to clear the 6.5rem icon plus a little breathing room
-   before the divider/first nav item below it. */
-.md-nav--primary .md-nav__title[for="__drawer"] {
-  background-color: var(--md-default-bg-color);
-  color: var(--md-default-fg-color);
-  height: 7.75rem;
-  padding: 0;
+   Only reachable below the 960px breakpoint where the header nav switches to the hamburger (see
+   .dkh-nav below) — otherwise unstyled, so it still looked like stock Material (indigo title
+   band, blue hover/active links) next to this site's plain monochrome header nav. */
+/* No "drawer panel" look at all anymore: Material's off-canvas sidebar is a narrow (12.1rem),
+   solid-background strip that slides in from the left — stretched here to the full viewport
+   width with a transparent background instead, so only the dimmed page (the existing .md-overlay
+   scrim) shows behind the glass pill, which now centers on the whole screen rather than within a
+   strip.
+   Fades in place instead of Material's own slide-in-from-the-left: no transform at all now, just
+   opacity — a directional wipe didn't make sense once the "drawer" isn't a strip anymore. Once it
+   doesn't move, .md-sidebar--primary doesn't need the off-screen-left positioning trick either,
+   so `left` just sits at 0 permanently (opacity handles show/hide).
+   !important throughout: Material's own `[dir=ltr] .md-sidebar--primary{left:-12.1rem}` is an
+   attribute+class selector (0,2,0), out-specificities a plain class (0,1,0) — same pattern hit
+   several times elsewhere in this file; without it here the same properties silently keep
+   Material's stale values instead of the ones set below. */
+@media screen and (max-width: 960px) {
+  .md-sidebar--primary {
+    left: 0 !important;
+    width: 100vw !important;
+    background-color: transparent !important;
+    /* The panel is a real full-viewport DOM element now (not just a visual illusion), sitting at
+       Material's own z-index:5 — above the header (z-index:4) and its hamburger button. Left
+       clickable, it silently eats every click on the screen, including on the hamburger itself —
+       pointer-events:none here lets clicks fall through to whatever's actually underneath (the
+       header's hamburger, or the .md-overlay scrim that closes the drawer on an outside click) at
+       all times, since only the pill + its close button (the .dkh-drawer-pill-wrap rule below)
+       are meant to be clickable, not the full-screen transparent area around them.
+       No opacity/transition here — see .dkh-drawer-pill-wrap below for where the fade actually
+       lives and why. `opacity` animating on any ancestor of a backdrop-filter element creates a
+       new "backdrop root" per spec, constraining the filter to sample only what's painted within
+       that same isolated layer — tried the fade here first specifically to keep backdrop-filter
+       able to reach the real page behind it, but between that and smooth animation, smooth
+       animation is what was asked for. So: no backdrop-filter on the pill at all anymore either
+       (see .md-nav__list below) — pointless to keep an "always-broken-here" filter around paying
+       for nothing. */
+    pointer-events: none;
+  }
+  [data-md-toggle="drawer"]:checked ~ .md-container .md-sidebar--primary {
+    /* Material's own checked-state rule also sets transform:translateX(12.1rem) — that was the
+       slide distance for its old off-canvas mechanic, which no longer applies now that the panel
+       fades in place, but removing my OWN transform override didn't remove Material's; it was
+       still shifting everything inside 12.1rem (242px at this root font-size) to the right. */
+    transform: translateX(0) !important;
+  }
+  /* Material's scrim defaults to a fairly heavy 54%-black dim (#0000008a) — moderate dimming is
+     fine (confirmed), but the pill's own glass treatment had to fight that darkness with a strong
+     brightness() boost to read as "white" rather than "muddy". Lightening the scrim itself here
+     means less darkness to compensate for in the first place. */
+  .md-overlay {
+    background-color: rgba(0, 0, 0, 0.32);
+  }
 }
-/* Material stretches the logo <a> full-width via left:.2rem/right:.2rem (no width of its own);
-   center the icon within that instead of leaving it flush left like the header's version.
-   .md-nav--primary .md-nav__title .md-nav__button.md-logo (not just .md-nav__button.md-logo):
-   Material's own `.md-nav__title .md-nav__button.md-logo` is a 3-class selector that outranks a
-   2-class one — same specificity pattern as the other Material overrides in this file. */
-.md-nav--primary .md-nav__title .md-nav__button.md-logo {
-  display: flex;
+/* No logo/title row anymore (see overrides/partials/nav.html) — the header icon is always on
+   screen already, so center the list itself both vertically and horizontally within the full
+   viewport (now that the panel spans it) instead of anchoring it under a title row. flex:none
+   keeps it sized to its own content rather than stretching to fill the column the way Material's
+   default flex:1 list would.
+   background-color:transparent: Material's `.md-nav--primary,.md-nav--primary .md-nav` carries
+   its OWN solid background (separate from .md-sidebar--primary's, already overridden above) —
+   missed the first time, so once the nav element grew to fill the full viewport along with the
+   sidebar, THIS is what was actually painting the whole screen white/dark behind the pill. */
+.md-nav--primary,
+.md-nav--primary .md-nav {
   justify-content: center;
+  align-items: center;
+  background-color: transparent !important;
 }
-/* Match .dkh-nav__link's text styling exactly (font-size/weight/letter-spacing/transform/opacity)
-   so the drawer reads as the same nav, not a different component. */
+/* position:relative anchor for the close button (absolutely positioned at its corner); shrink-
+   wraps to the pill's own size for free, since it's a flex child of a column container with
+   align-items:center (default content-sized cross-axis, no extra width:fit-content trick needed). */
+.dkh-drawer-pill-wrap {
+  position: relative;
+  /* This IS where the fade lives — smooth animation was the priority once it was clear
+     backdrop-filter couldn't work here anyway (see .md-nav__list below), so there's no more
+     reason to keep the opacity transition on the distant .md-sidebar--primary ancestor; animating
+     it directly on this (small, simple) element is cheap. Also handles the pointer-events split:
+     only the pill + its close button (not the full-screen transparent area around them) should be
+     clickable, and only while the drawer is actually open. */
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.2s ease;
+}
+[data-md-toggle="drawer"]:checked ~ .md-container .dkh-drawer-pill-wrap {
+  opacity: 1;
+  pointer-events: auto;
+}
+/* No backdrop-filter here (unlike the desktop condensed nav pill, .dkh-nav): it needs an ancestor
+   between it and .md-sidebar--primary to NOT animate opacity in order to see past that ancestor
+   and blur the real page (see .md-sidebar--primary's comment) — but the fade needing to live
+   right on .dkh-drawer-pill-wrap for smooth animation puts that ancestor's opacity transition
+   exactly where backdrop-filter can't tolerate it. So: plain translucent tint instead of true
+   glass — much higher opacity than the desktop pill's 55% so it still reads as a clean, bright
+   surface rather than something that looks like it's TRYING to be glassy and failing. Taller
+   capsule instead of a wide one, to hold a vertically stacked list instead of a horizontal row.
+   No divider lines between items (Material's default .md-nav__item border-top) — consistent
+   internal spacing reads as one glass object instead of a sectioned list. */
+.md-nav--primary .md-nav__list {
+  flex: none;
+  /* vw, not % — .dkh-drawer-pill-wrap (this element's direct parent since the close-button change)
+     shrink-wraps to ITS content, i.e. this list, so a % width here has no well-defined parent size
+     to resolve against (circular: wrapper waits on list, list wants a % of wrapper). That
+     resolved to some arbitrary/too-narrow value in practice, wrapping "OFF-SYLLABUS" — vw sizes
+     against the true viewport instead, sidestepping the circularity entirely. */
+  width: min(80vw, 300px);
+  max-height: 80vh;
+  overflow-y: auto;
+  margin: 0;
+  padding: 0.6rem;
+  border-radius: 26px;
+  background: color-mix(in srgb, var(--md-default-bg-color) 90%, transparent);
+  border: 1px solid color-mix(in srgb, var(--md-default-fg-color) 10%, transparent);
+  box-shadow:
+    inset 0 1px 1px color-mix(in srgb, white 55%, transparent),
+    0 8px 30px color-mix(in srgb, black 12%, transparent);
+}
+[data-md-color-scheme="slate"] .md-nav--primary .md-nav__list {
+  box-shadow:
+    inset 0 1px 1px color-mix(in srgb, white 12%, transparent),
+    0 8px 30px color-mix(in srgb, black 40%, transparent);
+}
+/* Close (X) button: an explicit, always-visible way to close the drawer — tapping the dimmed
+   background to close isn't an obvious affordance on its own. Sits as a small solid badge at the
+   pill's corner (slightly overlapping its border, the usual modal-close convention) rather than
+   inset within it, so it reads as clearly separate from the nav items. Same <label for="__drawer">
+   toggle mechanism as the hamburger — no JS needed. */
+.dkh-drawer-close {
+  position: absolute;
+  top: -10px;
+  right: -10px;
+  width: 30px;
+  height: 30px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+  background: var(--md-default-bg-color);
+  border: 1px solid color-mix(in srgb, var(--md-default-fg-color) 14%, transparent);
+  box-shadow: 0 3px 10px color-mix(in srgb, black 18%, transparent);
+  color: var(--md-default-fg-color);
+  cursor: pointer;
+  opacity: 0.9;
+  transition: opacity 0.2s ease, transform 0.15s ease;
+}
+.dkh-drawer-close svg {
+  width: 13px;
+  height: 13px;
+}
+.dkh-drawer-close:hover {
+  opacity: 1;
+}
+.dkh-drawer-close:active {
+  transform: scale(0.9);
+}
+.md-nav--primary .md-nav__item {
+  border-top: none;
+}
+/* Match .dkh-nav__link's text styling (font-size/weight/letter-spacing/transform/opacity) so the
+   drawer reads as the same nav, not a different component; each item gets its own rounded
+   highlight (like the desktop pill's per-link hover) rather than a plain text row. */
 .md-nav--primary .md-nav__link {
   font-size: 0.78rem;
   font-weight: 500;
@@ -53,34 +187,33 @@ body {
      wouldn't center it — justify-content is what actually centers a flex child's content. */
   justify-content: center;
   text-align: center;
+  border-radius: 999px;
+  padding: 0.7rem 1rem;
+  margin: 0.1rem 0;
+  transition: opacity 0.2s ease, background-color 0.25s cubic-bezier(0.4, 0, 0.2, 1);
 }
 .md-nav--primary .md-nav__link:hover,
 .md-nav--primary .md-nav__item--active > .md-nav__link {
   opacity: 1;
+  background-color: color-mix(in srgb, var(--md-default-fg-color) 8%, transparent);
 }
-/* Nicer opening motion for the drawer panel itself (Material's default is a flatter linear-ish
-   slide), plus a staggered fade+slide-up entrance for each nav item once it's open — closer to
-   the "flow" Teddy's mobile nav has, without copying his markup (his is a full-screen overlay
-   with a skewed sweep-in per item; this site's drawer is Material's off-canvas sidebar, so the
-   same effect is approximated as a panel ease + per-item stagger instead).
+/* Staggered fade-in for each nav item once the drawer is open (opacity only — no transform/motion,
+   both per the "no directional movement" request and because animating transform on 5 items at
+   once, on top of the panel's own opacity fade recompositing the backdrop-filtered pill every
+   frame, was the likely source of the reported jank; opacity-only is far cheaper to composite).
    #__drawer and .md-container are true siblings directly under <body> (see base.html), so
    :checked ~ .md-container correctly scopes this to only when the drawer is open, and re-fires
    the animation fresh each time it's reopened. */
-.md-sidebar--primary {
-  transition: transform 0.4s cubic-bezier(0.16, 1, 0.3, 1), box-shadow 0.4s ease;
-}
 @keyframes dkh-nav-item-in {
   from {
     opacity: 0;
-    transform: translateY(10px);
   }
   to {
     opacity: 1;
-    transform: translateY(0);
   }
 }
 #__drawer:checked ~ .md-container .md-nav--primary .md-nav__list > .md-nav__item {
-  animation: dkh-nav-item-in 0.45s cubic-bezier(0.16, 1, 0.3, 1) both;
+  animation: dkh-nav-item-in 0.3s ease both;
 }
 #__drawer:checked ~ .md-container .md-nav--primary .md-nav__list > .md-nav__item:nth-child(1) { animation-delay: 0.08s; }
 #__drawer:checked ~ .md-container .md-nav--primary .md-nav__list > .md-nav__item:nth-child(2) { animation-delay: 0.12s; }
@@ -88,27 +221,41 @@ body {
 #__drawer:checked ~ .md-container .md-nav--primary .md-nav__list > .md-nav__item:nth-child(4) { animation-delay: 0.2s; }
 #__drawer:checked ~ .md-container .md-nav--primary .md-nav__list > .md-nav__item:nth-child(5) { animation-delay: 0.24s; }
 
-/* --- Header layout below the 76.25em breakpoint (hamburger visible, condensed nav hidden) -----
-   Default flex order would put the hamburger right after the logo (near the left), since it's
-   second in the header's DOM order. Teddy's mobile header instead clusters the menu control on
-   the right, next to the theme toggle — reordered here with the `order` property rather than
-   moving it in the template, since nothing else depends on its DOM position. This whole range
-   (down to true mobile) gets the reordered hamburger; the logo stays untouched here — still
-   left-aligned in normal flex flow, same as full desktop — since "narrow desktop browser window"
-   isn't the same as "phone", and it should only recenter once it actually is one (see the
-   37.5em breakpoint below, shared with the typing-effect line-wrap fix). */
+/* Material hides the logo entirely below 76.234375em by default (`.md-logo{display:none}`),
+   expecting the site-title text to show instead — but we hide that title text too (see
+   .dkh-header .md-header__title above), so without this the logo just vanishes there. Kept at
+   Material's own breakpoint (not the tighter 960px one below): this range needs to cover all the
+   way up to 76.234375em regardless of where OUR nav-pill/hamburger switch happens, since Material
+   hides the logo independently of that. */
 @media screen and (max-width: 76.234375em) {
   .md-header__button.md-logo {
-    /* Material hides the logo entirely in this width range by default (`.md-logo{display:none}`),
-       expecting the site-title text to show instead — but we hide that title text too (see
-       .dkh-header .md-header__title above), so without this the logo just vanishes here. */
     display: block;
   }
+}
+/* --- Header nav <-> hamburger switch: 960px, not Material's 76.25em (1220px) default -----------
+   Measured where the condensed nav pill's own edge actually gets close to the logo/toggle (the
+   binding constraint is the logo side): comfortable down to ~1000px, 16px from touching at 950px,
+   already overlapping by 900px. 960px keeps a small buffer before that overlap while still only
+   switching once the pill is genuinely running out of room, per request, rather than Material's
+   default (which left a few hundred px of unused space on both sides before switching).
+   Two rules, not one: Material's own hamburger-hiding rule only fires above 76.25em, so without
+   an explicit override here the hamburger would show *alongside* the nav pill in the 960px–1220px
+   gap between our breakpoint and Material's. */
+@media screen and (max-width: 960px) {
   .md-header__button[for="__drawer"] {
+    /* Default flex order would put the hamburger right after the logo (near the left), since
+       it's second in the header's DOM order. Teddy's mobile header instead clusters the menu
+       control on the right, next to the theme toggle — reordered here with `order` rather than
+       moving it in the template, since nothing else depends on its DOM position. */
     order: 2;
     align-self: center;
     transform: translateY(-0.75rem);
     margin-left: 0.5rem;
+  }
+}
+@media screen and (min-width: 960px) {
+  .md-header__button[for="__drawer"] {
+    display: none;
   }
 }
 /* True mobile only: center the logo instead of leaving it left-aligned. Pulling it out of flex
@@ -151,7 +298,7 @@ body {
 .md-sidebar--secondary { display: none !important; }
 /* Primary sidebar: only used as the off-canvas mobile drawer here (our own nav replaces its
    desktop role), so hide it at the breakpoint where the condensed header nav takes over. */
-@media screen and (min-width: 76.25em) {
+@media screen and (min-width: 960px) {
   .md-sidebar--primary { display: none; }
 }
 
@@ -198,6 +345,62 @@ body {
   -webkit-backdrop-filter: blur(24px);
   mask-image: linear-gradient(to bottom, black 0%, rgba(0, 0, 0, 0.9) 20%, rgba(0, 0, 0, 0.6) 45%, transparent 100%);
   -webkit-mask-image: linear-gradient(to bottom, black 0%, rgba(0, 0, 0, 0.9) 20%, rgba(0, 0, 0, 0.6) 45%, transparent 100%);
+}
+/* Mobile only: no sticky/pinned header at all. iOS Safari's toolbar-collapse animation crossfades
+   a cached snapshot of the page against the freshly re-rendered live one — when the header's sticky
+   position and its own scroll-shrink transform (.dkh-scrolled above) are both actively changing
+   during that exact window, the snapshot and the live frame disagree, and the header visibly
+   detaches and floats mid-page for a moment. Two targeted fixes for that (GPU layer promotion,
+   disabling the page's elastic overscroll bounce) didn't help — simplest is to stop fighting for
+   "stay pinned at the top" on mobile at all. The header (icon + blur + nav toggle) just scrolls
+   away with the rest of the page like ordinary content instead. */
+@media screen and (max-width: 960px) {
+  .dkh-header {
+    position: static;
+  }
+  .dkh-blur-overlay {
+    display: none;
+  }
+}
+/* Scroll-to-top button: mobile only (display:none past the breakpoint — desktop's header is still
+   pinned, so it's never needed there), hidden until scrolled down a bit (extra.js toggles
+   .dkh-show-scrolltop on <html>, same rAF-throttled-scroll pattern as .dkh-scrolled). Same circular
+   icon-button look as .dkh-drawer-close, just bigger — this one's a primary tap target on its own,
+   not a small corner affordance riding on a bigger element. */
+.dkh-scrolltop {
+  position: fixed;
+  right: 1.1rem;
+  bottom: 1.1rem;
+  z-index: 3;
+  width: 46px;
+  height: 46px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+  background: var(--md-default-bg-color);
+  border: 1px solid color-mix(in srgb, var(--md-default-fg-color) 14%, transparent);
+  box-shadow: 0 3px 14px color-mix(in srgb, black 20%, transparent);
+  color: var(--md-default-fg-color);
+  cursor: pointer;
+  opacity: 0;
+  transform: translateY(6px);
+  pointer-events: none;
+  transition: opacity 0.2s ease, transform 0.2s ease;
+}
+.dkh-scrolltop svg {
+  width: 20px;
+  height: 20px;
+}
+.dkh-show-scrolltop .dkh-scrolltop {
+  opacity: 0.92;
+  transform: translateY(0);
+  pointer-events: auto;
+}
+@media screen and (min-width: 960px) {
+  .dkh-scrolltop {
+    display: none;
+  }
 }
 .dkh-header .md-header__title {
   display: none;
@@ -254,13 +457,22 @@ body {
 .md-header__button.md-logo:hover .dkh-logo-swap__hover {
   opacity: 1;
 }
-/* Periodic auto-blink (extra.js toggles .dkh-blink on a timer) — same crossfade as the hover
-   swap above, just a different trigger, so it reuses the same 0.15s opacity transition. */
+/* Periodic auto-blink (extra.js toggles .dkh-blink on a timer). Unlike hover, this does NOT reuse
+   the crossfade transition above — eyes-open.svg and eyes-closed.svg aren't pixel-registered with
+   each other (every stroke has a tiny sub-pixel offset between the two files, confirmed with a
+   difference-blend render), so fading between them makes the whole drawing visibly double-expose
+   and jitter for a moment, not just the eyes. Inverted (dark mode) that reads as a light flicker
+   across the whole icon. A real blink is near-instant anyway, so extra.js also adds
+   .dkh-blink-instant for the full blink (both edges) to swap with no transition at all instead. */
 .dkh-logo-swap.dkh-blink .dkh-logo-swap__base {
   opacity: 0;
 }
 .dkh-logo-swap.dkh-blink .dkh-logo-swap__hover {
   opacity: 1;
+}
+.dkh-logo-swap.dkh-blink-instant .dkh-logo-swap__base,
+.dkh-logo-swap.dkh-blink-instant .dkh-logo-swap__hover {
+  transition: none !important;
 }
 
 /* --- Condensed, centered nav (desktop) -------------------------------------------------------
@@ -307,7 +519,7 @@ body {
 .dkh-nav:hover {
   background: color-mix(in srgb, var(--md-default-bg-color) 72%, transparent);
 }
-@media screen and (min-width: 76.25em) {
+@media screen and (min-width: 960px) {
   .dkh-nav {
     display: flex;
   }
@@ -411,9 +623,17 @@ body {
   margin: 0 0 0.6em;
   border-bottom: none;
 }
+/* will-change: contents: the text mutates every ~60ms while typing (see extra.js). Since it's
+   italic, glyph ink paints outside the element's layout box (slant bleeds left at the bottom of
+   descenders like "p"/"g", right at the top) — but Chrome's repaint-invalidation region is based
+   on that layout box, not the ink. On a box that resizes every keystroke, ink painted outside the
+   old box isn't always cleared before the new frame draws, which reads as clipping on new
+   characters or leftover artifacts from a previous frame's descenders. will-change hints the
+   browser to fully repaint this element's bounds each change instead of a partial damage rect. */
 .dkh-hero__typed {
   font-weight: 600;
   font-style: italic;
+  will-change: contents;
 }
 /* Mobile only: "Hi! I'm David, a" already fills the narrow width on its own, so the typed word
    wraps to a line of its own — but WHICH line it wraps onto shifts as the word grows/shrinks

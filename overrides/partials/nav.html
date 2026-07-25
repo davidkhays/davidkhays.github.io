@@ -1,11 +1,17 @@
 {#-
-  Overrides material/templates/partials/nav.html (mkdocs-material 9.7.7). Two changes from stock:
-  - Drops the {{ config.site_name }} text next to the logo in the drawer's title row — the header
-    face icon already stands alone with no site-name text next to it, so the drawer matches that
-    instead of repeating "David K. Hays".
-  - Skips the Home entry in the nav list — the logo above the list already links home, so listing
-    it again as a nav item (matching the desktop header nav, which skips it the same way) is
-    redundant. First item is About.
+  Overrides material/templates/partials/nav.html (mkdocs-material 9.7.7). Changes from stock:
+  - Drops the logo/title row entirely — the header face icon is always on screen (both the
+    desktop header and the centered-on-mobile version), so repeating it inside the drawer is
+    redundant. The list is now the drawer's only content, centered by extra.css instead of
+    anchored under a title row.
+  - Skips the Home entry in the nav list — the always-visible header icon already links home, so
+    listing it again as a nav item (matching the desktop header nav, which skips it the same way)
+    is redundant. First item is About.
+  - Wraps the list with an explicit close (X) button — closing by tapping the dimmed background
+    isn't an obvious affordance on its own, so a visible close control sits at the pill's corner.
+    The wrapper (.dkh-drawer-pill-wrap) exists so the X can anchor to the pill's own edge via
+    position:absolute regardless of where the pill centers on screen — a <label for="__drawer">,
+    same toggle mechanism as the hamburger, so it needs no JS.
 -#}
 {% import "partials/nav-item.html" as item with context %}
 {% set class = "md-nav md-nav--primary" %}
@@ -16,22 +22,24 @@
   {% set class = class ~ " md-nav--integrated" %}
 {% endif %}
 <nav class="{{ class }}" aria-label="{{ lang.t('nav') }}" data-md-level="0">
-  <label class="md-nav__title" for="__drawer">
-    <a href="{{ config.extra.homepage | d(nav.homepage.url, true) | url }}" title="{{ config.site_name | e }}" class="md-nav__button md-logo" aria-label="{{ config.site_name }}" data-md-component="logo">
-      {% include "partials/logo.html" %}
-    </a>
-  </label>
   {% if config.repo_url %}
     <div class="md-nav__source">
       {% include "partials/source.html" %}
     </div>
   {% endif %}
-  <ul class="md-nav__list" data-md-scrollfix>
-    {% for nav_item in nav.items %}
-      {% if not nav_item.is_homepage %}
-        {% set path = "__nav_" ~ loop.index %}
-        {{ item.render(nav_item, path, 1) }}
-      {% endif %}
-    {% endfor %}
-  </ul>
+  <div class="dkh-drawer-pill-wrap">
+    <ul class="md-nav__list" data-md-scrollfix>
+      {% for nav_item in nav.items %}
+        {% if not nav_item.is_homepage %}
+          {% set path = "__nav_" ~ loop.index %}
+          {{ item.render(nav_item, path, 1) }}
+        {% endif %}
+      {% endfor %}
+    </ul>
+    <label class="dkh-drawer-close" for="__drawer" aria-label="Close menu">
+      <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+        <path d="M6 6L18 18M18 6L6 18" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/>
+      </svg>
+    </label>
+  </div>
 </nav>
