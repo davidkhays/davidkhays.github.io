@@ -123,7 +123,7 @@
   var el = document.getElementById("dkh-typed");
   if (!el) return;
 
-  var words = ["neuroscientist.", "strategist.", "writer.", "photographer.", "human."];
+  var words = ["neuroscientist.", "storyteller.", "strategist.", "human."];
   var wordIndex = 0;
   var charIndex = 0;
   var deleting = false;
