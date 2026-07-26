@@ -24,7 +24,12 @@ body {
    var(--md-default-bg-color)}` is opaque and would otherwise paint over this, hence the
    transparent override below (dark mode only, same selector). Everything opaque on top (header
    once scrolled, .dkh-box cards) still uses --md-default-bg-color as normal, so legibility is
-   unaffected — this only shows through genuinely transparent/blurred areas. */
+   unaffected — this only shows through genuinely transparent/blurred areas.
+   (Tried keeping this always-present at opacity:0 instead of display:none, on the theory that it'd
+   let iOS pre-build its expensive blurred layers ahead of time and avoid a first-toggle stutter —
+   measured no improvement on an actual iPhone, so reverted. Also tried masking the stutter with a
+   brief loading spinner instead of eliminating it — also reverted, no improvement measured. The
+   iPhone-only first-toggle stutter/black-screen issue is still open.) */
 /* Material's own slate defaults (hsla(...,90%,0.82) / 0.56) read as a muted mid-gray, not
    dark-mode-appropriate near-white — brightened here the same way the monochrome accent override
    at the top of this file replaces Material's palette variables, scoped to slate only so light
@@ -101,9 +106,10 @@ body[data-md-color-scheme="slate"] .dkh-aurora-bg {
   background: linear-gradient(
     to bottom,
     transparent 0%,
-    rgba(210, 50, 90, 0.32) 15%,
-    rgba(150, 40, 200, 0.34) 40%,
-    rgba(220, 50, 80, 0.28) 65%,
+    rgba(178, 24, 43, 0.36) 15%,
+    rgba(140, 20, 55, 0.36) 35%,
+    rgba(150, 40, 200, 0.3) 55%,
+    rgba(178, 24, 43, 0.32) 78%,
     transparent 100%
   );
   filter: blur(14px);
@@ -132,6 +138,46 @@ body[data-md-color-scheme="slate"] .dkh-aurora-bg {
   }
   .dkh-aurora-bg__blob {
     transition: none;
+  }
+}
+/* Mobile only: no blurred blobs, AND no position:fixed on the aurora background itself. Two
+   separate bugs were happening together on iPhone here, confirmed separately:
+   1. The first light-to-dark switch visibly froze the page for a few seconds — traced to the cost
+      of building several heavily-blurred, full-viewport GPU layers all at once (5 blobs at 60px
+      blur, up to 20 rays at 14px blur). Fixed by dropping the blobs on mobile — the biggest single
+      cost (60px blur on 5 full-viewport circles) — while keeping the (much cheaper, 14px blur)
+      rays and the plain unblurred stars/Orion's Belt. If rays alone turn out to still cause a
+      freeze, drop `.dkh-aurora-bg__ray` back into the display:none rule below too.
+   2. Separately, the top and bottom of the screen would black out after switching to dark and stay
+      that way even after switching back to light, until a full reload. This persisted even with
+      every blurred layer removed, ruling out blur/GPU cost as ITS cause. The actual suspect was
+      .dkh-aurora-bg's own position:fixed — this project already hit and fixed the exact same
+      category of bug for the header earlier (fixed/sticky elements misbehaving around Safari's
+      dynamic collapsing toolbar); this applies that same fix here: position:absolute instead of
+      fixed on mobile, so it's laid out relative to body (which already has position:relative, and
+      naturally spans the full page height) rather than pinned to the viewport. body's own
+      background-color is set to match as a fallback so there's no gap if the absolutely-positioned
+      layer doesn't extend as far as body does. Desktop is completely unaffected either way — every
+      rule here only exists below the breakpoint. */
+@media screen and (max-width: 960px) {
+  .dkh-aurora-bg__blob {
+    display: none;
+  }
+  body[data-md-color-scheme="slate"] {
+    background-color: #05060f;
+  }
+  body[data-md-color-scheme="slate"] .dkh-aurora-bg {
+    position: absolute;
+    top: -150px;
+    left: 0;
+    right: 0;
+    bottom: 0;
+  }
+  .dkh-aurora-bg__ray {
+    width: 32vw;
+  }
+  .dkh-aurora-bg__ray--pale {
+    display: none;
   }
 }
 
@@ -387,12 +433,18 @@ body[data-md-color-scheme="slate"] .dkh-aurora-bg {
    it just pushed the icon partly above the header instead). */
 @media screen and (max-width: 37.5em) {
   .dkh-header .md-header__inner {
-    min-height: 7rem;
+    /* +14px here (not just on the icon below) so everything after the header — the hero heading,
+       "Hi! I'm David...", all of it — shifts down by the same 14px too, since that content begins
+       right where this box ends. The icon's own +7px (half of 14px) is what actually lands it at
+       "shifted down by 14px": growing the box by 14px already moves its centerpoint (and so the
+       icon, which tracks top:50%) down by half that on its own, so the icon only needs to make up
+       the other half itself. */
+    min-height: calc(7rem + 14px);
   }
   .md-header__button.md-logo {
     position: absolute;
     left: 50%;
-    top: 50%;
+    top: calc(50% + 7px);
     transform: translate(-50%, -50%);
   }
 }
@@ -544,6 +596,15 @@ body[data-md-color-scheme="slate"] .dkh-aurora-bg {
 }
 .dkh-scrolled .dkh-logo-swap {
   transform: scale(0.8);
+}
+/* Mobile only: no shrink-on-scroll for the icon. The mobile header already scrolls away with the
+   page instead of staying pinned (see .dkh-header position:static below), so this doesn't need
+   its own separate reason beyond "not wanted there" — desktop keeps the shrink, this only
+   overrides it below the breakpoint. */
+@media screen and (max-width: 960px) {
+  .dkh-scrolled .dkh-logo-swap {
+    transform: none;
+  }
 }
 /* Beats Material's own `.md-header__button.md-logo img { height:1.2rem; width:auto; fill:currentcolor }`
    (meant for a single-color wordmark icon), which otherwise wins on specificity and shrinks this
@@ -730,6 +791,11 @@ body[data-md-color-scheme="slate"] .dkh-aurora-bg {
   margin: 0 auto;
   padding: 1rem 1.75rem 1.65rem;
 }
+@media screen and (min-width: 960px) {
+  .dkh-hero {
+    padding-top: 0.25rem;
+  }
+}
 /* .dkh-hero .dkh-hero__heading (not just .dkh-hero__heading): Material's `.md-typeset h1 { color:
    var(--md-default-fg-color--light); font-size: 2em }` is a class+type selector, out-specificities
    a single-class override — same pattern as the box title fix above. Its --light color is a muted
@@ -764,6 +830,9 @@ body[data-md-color-scheme="slate"] .dkh-aurora-bg {
   .dkh-hero__typed {
     display: block;
   }
+  .dkh-hero .dkh-hero__heading {
+    font-size: 2.3em;
+  }
 }
 .dkh-hero__typed::after {
   content: "";
@@ -796,6 +865,11 @@ body[data-md-color-scheme="slate"] .dkh-hero__sub {
 .dkh-box__list a {
   text-decoration: underline;
   text-underline-offset: 0.15em;
+}
+/* The paperclip-emoji "source" links in "Some Things I Believe" aren't text, so underlining them
+   like the other .dkh-box__list links doesn't read the same way — no underline for these. */
+.dkh-box__list a.dkh-box__list-icon-link {
+  text-decoration: none;
 }
 
 /* --- Three-column boxes -------------------------------------------------------------------- */

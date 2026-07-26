@@ -63,7 +63,10 @@
   var container = document.querySelector("[data-dkh-rays]");
   if (!container) return;
 
-  var RAY_PEAK_OPACITY = 0.25;
+  // Mobile only (same 960px breakpoint as extra.css): rays read fainter on mobile since the blobs
+  // that normally layer under/around them are hidden there (see the mobile-only block in
+  // extra.css), so they're doubled here specifically to compensate.
+  var RAY_PEAK_OPACITY = window.innerWidth <= 960 ? 0.5 : 0.25;
   var DRIFT_RANGE_VW = 1.5;
   var reduceMotion =
     window.matchMedia && window.matchMedia("(prefers-reduced-motion: reduce)").matches;
@@ -92,7 +95,11 @@
     }
   }
 
-  batch(10, -8, 28, RAY_PEAK_OPACITY);
+  // Mobile only (same 960px breakpoint as elsewhere): 5 primary rays instead of 10 — the pale set
+  // is already hidden entirely on mobile via CSS, and the primary set is now wider there too (see
+  // extra.css), so fewer, bigger rays reads better than the desktop density at that width.
+  var isMobile = window.innerWidth <= 960;
+  batch(isMobile ? 5 : 10, -8, 28, RAY_PEAK_OPACITY);
   batch(10, 21, 28, RAY_PEAK_OPACITY * 0.2, "dkh-aurora-bg__ray--pale");
 
   container.appendChild(fragment);

@@ -1,5 +1,4 @@
 ---
-title: David K. Hays
 description: Placeholder description — David K. Hays' personal site.
 ---
 
@@ -54,19 +53,18 @@ description: Placeholder description — David K. Hays' personal site.
   <div class="dkh-box">
     <h2 class="dkh-box__title">Some Things I Believe</h2>
     <ul class="dkh-box__list">
-      <li>The human condition is unfathomably terrifying and equally beautiful.</li>
+      <li>The human condition is unfathomably terrifying, but equally beautiful.</li>
       <li>We are all equal as impostors, living for the first time, making it up as we go.</li>
       <li>Gratitude, forgiveness, and radical acceptance are healthier than trying to reason with an unfair universe.</li>
-      <li>Fear of the event is worse than the event. [<a href="https://www.ebay.com/itm/137132791289" target="_blank" rel="noopener noreferrer">Source</a>]</li>
+      <li>Fear of the event is worse than the event. (–Ray D. Thrower <a href="https://www.aderholdfh.com/obituaries/ray-d-thrower" target="_blank" rel="noopener noreferrer" class="dkh-box__list-icon-link">📎</a>)</li>
       <li>Time, comedy, and company are the best medicines for the heart.</li>
       <li>Sometimes all you need is to call a friend. Or to talk to anyone at all!</li>
-      <li>Appearance has an underestimated influence on subjective perception.</li>
+      <li>Aesthetics have an inevitable influence on "objective" content assessment.</li>
       <li>Dichotomies are cognitively convenient but usually false and harmful.</li>
       <li>Complaining is rarely more effective than acting or adapting.</li>
-      <li>Changing the world is easier than it sounds. Wield this power gently.</li>
       <li>Smiling at strangers makes the world a better place. :)</li>
-      <li>Ultimately, it’s all about love. [<a href="https://youtu.be/TJ4K5WFWIuw?si=jMNcLz2mvUaTSfGk&t=343" target="_blank" rel="noopener noreferrer">Source</a>]</li>
-      <li>No love, however brief, is wasted. [<a href="https://x.com/louisethebaker/status/1379961867922239497" target="_blank" rel="noopener noreferrer">Source</a>]</li>
+      <li>Ultimately, it’s all about love. <a href="https://youtu.be/TJ4K5WFWIuw?si=jMNcLz2mvUaTSfGk&t=343" target="_blank" rel="noopener noreferrer" class="dkh-box__list-icon-link">📎</a></li>
+      <li>No love, however brief, is wasted. <a href="https://x.com/louisethebaker/status/1379961867922239497" target="_blank" rel="noopener noreferrer" class="dkh-box__list-icon-link">📎</a></li>
       <li>Even if I die suddenly tomorrow, I am one of the luckiest people on Earth.</li>
       <li>Everything works out in the end.</li>
     </ul>

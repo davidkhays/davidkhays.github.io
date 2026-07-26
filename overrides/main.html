@@ -1,0 +1,18 @@
+{#-
+  Overrides material/templates/base.html's extrahead block (mkdocs-material 9.7.7) to add Open
+  Graph / Twitter Card meta tags — these are what iMessage, WhatsApp, Instagram DMs, Slack, etc.
+  read to build the preview card shown when this site's URL is pasted into a chat. Without them,
+  those apps fall back to whatever they can scrape from the page (usually just the plain title,
+  no image), which is why the site needed this file added rather than already having a preview.
+-#}
+{% extends "base.html" %}
+
+{% block extrahead %}
+  <meta property="og:type" content="website">
+  <meta property="og:site_name" content="{{ config.site_name }}">
+  <meta property="og:title" content="{{ config.site_name }}">
+  <meta property="og:description" content="Personal portfolio of David K. Hays.">
+  <meta property="og:url" content="{{ page.canonical_url }}">
+  <meta property="og:image" content="{{ config.site_url }}assets/images/social-preview.png">
+  <meta name="twitter:card" content="summary_large_image">
+{% endblock %}
