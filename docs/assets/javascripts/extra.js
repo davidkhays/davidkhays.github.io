@@ -1,3 +1,212 @@
+// Aurora dark-mode background: generates a sparse ambient star field plus a fixed, slightly
+// brighter Orion's Belt asterism (see .dkh-aurora-bg in extra.css). Each ambient star needs its OWN
+// random position/size/timing so they flicker independently rather than as one synchronized layer
+// — a single CSS background-image of dots can't do that (an animation on the container would fade
+// them all together), so this is genuinely one of the few places actual per-element randomization
+// needs real DOM nodes rather than pure CSS. Runs once regardless of the current light/dark toggle
+// state — the stars just sit invisible under display:none (light mode) until the CSS reveals them,
+// no need to regenerate on toggle.
+(function () {
+  var container = document.querySelector("[data-dkh-stars]");
+  if (!container) return;
+
+  var STAR_COUNT = 40;
+  var fragment = document.createDocumentFragment();
+
+  for (var i = 0; i < STAR_COUNT; i++) {
+    var star = document.createElement("div");
+    star.className = "dkh-aurora-bg__star";
+    star.style.top = Math.random() * 100 + "%";
+    star.style.left = Math.random() * 100 + "%";
+    star.style.setProperty("--dkh-star-size", (Math.random() * 1.6 + 0.8).toFixed(2) + "px");
+    star.style.setProperty("--dkh-twinkle-peak", (Math.random() * 0.5 + 0.4).toFixed(2));
+    star.style.setProperty("--dkh-twinkle-duration", (Math.random() * 7 + 6).toFixed(2) + "s");
+    star.style.setProperty("--dkh-twinkle-delay", (Math.random() * -18).toFixed(2) + "s");
+    fragment.appendChild(star);
+  }
+
+  // Orion's Belt: fixed positions (not randomized — it's meant to be the same recognizable
+  // asterism every time, not a random cluster), bigger and a higher twinkle peak than the ambient
+  // stars so it reads as a distinct, brighter feature rather than blending into the scatter.
+  var belt = [
+    { left: "66%", top: "20%" },
+    { left: "69%", top: "22.5%" },
+    { left: "72%", top: "25%" },
+  ];
+  belt.forEach(function (pos, index) {
+    var star = document.createElement("div");
+    star.className = "dkh-aurora-bg__star";
+    star.style.left = pos.left;
+    star.style.top = pos.top;
+    star.style.setProperty("--dkh-star-size", "2.4px");
+    star.style.setProperty("--dkh-twinkle-peak", "0.9");
+    star.style.setProperty("--dkh-twinkle-duration", (8 + index * 1).toFixed(2) + "s");
+    star.style.setProperty("--dkh-twinkle-delay", (index * -3).toFixed(2) + "s");
+    fragment.appendChild(star);
+  });
+
+  container.appendChild(fragment);
+})();
+
+// Diagonal light rays (see .dkh-aurora-bg__ray in extra.css): each ray needs its own randomized
+// position/angle/timing so the fluttering/fading reads as independent rays rather than one
+// synchronized layer. Originally animated with plain CSS @keyframes, which turned out to have a
+// mobile-only bug: those keyframes run entirely in the browser's own animation engine with no JS
+// re-checking them, and some mobile browsers fail to properly resume an infinite CSS animation
+// after its ancestor (.dkh-aurora-bg) toggles display:none -> block (light mode -> dark mode ->
+// light -> dark again) — the ray would get stuck invisible until a full page reload. The blobs
+// never had this problem because they're driven by a live requestAnimationFrame loop that
+// re-checks the current color scheme and re-writes styles every single frame, so they self-heal
+// from any interruption automatically. Rays now use that same JS-driven pattern instead of CSS
+// animation, for the same robustness.
+(function () {
+  var container = document.querySelector("[data-dkh-rays]");
+  if (!container) return;
+
+  var RAY_PEAK_OPACITY = 0.25;
+  var DRIFT_RANGE_VW = 1.5;
+  var reduceMotion =
+    window.matchMedia && window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+
+  var fragment = document.createDocumentFragment();
+  var rays = [];
+
+  // batch(): a group of rays sharing a left-position range, a peak opacity, and (optionally) an
+  // extra class for a color variant — used once for the original set, once more for the paler
+  // secondary set further right (see below).
+  function batch(count, leftMin, leftRange, peakOpacity, extraClass) {
+    for (var i = 0; i < count; i++) {
+      var ray = document.createElement("div");
+      ray.className = extraClass ? "dkh-aurora-bg__ray " + extraClass : "dkh-aurora-bg__ray";
+      ray.style.left = (Math.random() * leftRange + leftMin).toFixed(1) + "vw";
+      ray.style.marginTop = (Math.random() * 20 - 15).toFixed(1) + "vh";
+      ray.style.setProperty("--dkh-ray-angle", (-(18 + Math.random() * 12)).toFixed(1) + "deg");
+      fragment.appendChild(ray);
+      rays.push({
+        el: ray,
+        peakOpacity: peakOpacity,
+        fadePeriodMs: (Math.random() * 6 + 8) * 1000,
+        driftPeriodMs: (Math.random() * 8 + 10) * 1000,
+        phase: Math.random() * Math.PI * 2,
+      });
+    }
+  }
+
+  batch(10, -8, 28, RAY_PEAK_OPACITY);
+  batch(10, 21, 28, RAY_PEAK_OPACITY * 0.2, "dkh-aurora-bg__ray--pale");
+
+  container.appendChild(fragment);
+
+  if (reduceMotion) {
+    rays.forEach(function (ray) {
+      ray.el.style.opacity = String(ray.peakOpacity * 0.6);
+    });
+    return;
+  }
+
+  function animateRay(ray) {
+    function update() {
+      requestAnimationFrame(update);
+      if (document.body.getAttribute("data-md-color-scheme") !== "slate") return;
+
+      var now = Date.now();
+      var fade = (Math.sin((now / ray.fadePeriodMs) * Math.PI * 2 + ray.phase) + 1) / 2;
+      var drift = Math.sin((now / ray.driftPeriodMs) * Math.PI * 2 + ray.phase);
+
+      ray.el.style.opacity = (fade * ray.peakOpacity).toFixed(3);
+      ray.el.style.marginLeft = (drift * DRIFT_RANGE_VW).toFixed(2) + "vw";
+    }
+    update();
+  }
+
+  rays.forEach(animateRay);
+})();
+
+// Aurora blobs (dark mode only, see .dkh-aurora-bg__blob in extra.css): 5 full-viewport-sized,
+// heavily-blurred circles doing an independent slow random walk with a gentle scale pulse,
+// cross-fading through a few saturated color palettes over time. Ported closely from a reference
+// the user found and asked for directly (colors, blur radius, walk/parallax logic) rather than
+// designed from scratch. Runs continuously via requestAnimationFrame but only writes new
+// transforms while dark mode is active — checked fresh each frame, so it reacts to the light/dark
+// toggle with no separate listener needed, same as the rest of this file's dark-mode pieces.
+(function () {
+  var container = document.querySelector("[data-dkh-aurora-blobs]");
+  if (!container) return;
+
+  // Reds, pinks, and purples as the core palette; emerald green and turquoise blue mixed in as
+  // recurring (but not dominant) accents — oranges/yellows dropped entirely.
+  var COLOR_SETS = [
+    ["rgba(255,51,85,0.7)", "rgba(255,45,149,0.7)", "rgba(155,48,255,0.7)", "rgba(34,197,94,0.7)", "rgba(26,188,201,0.7)"],
+    ["rgba(255,20,147,0.7)", "rgba(123,0,255,0.7)", "rgba(255,45,85,0.7)", "rgba(255,110,199,0.7)", "rgba(34,197,94,0.7)"],
+    ["rgba(157,78,221,0.7)", "rgba(255,77,109,0.7)", "rgba(255,93,162,0.7)", "rgba(34,197,94,0.7)", "rgba(26,188,201,0.7)"],
+  ];
+  var BLOB_COUNT = 5;
+  var FADE_MS = 4000;
+  var CYCLE_MS = 30000;
+  var MAX_OPACITY = "0.09";
+  var SPEED_RANGE = 0.0125;
+  var PULSE_SPEED = 0.0001;
+  var Y_SHIFT = 20;
+
+  var currentSet = 0;
+  var blobs = [];
+  for (var i = 0; i < BLOB_COUNT; i++) {
+    var blob = document.createElement("div");
+    blob.className = "dkh-aurora-bg__blob";
+    blob.style.background = COLOR_SETS[currentSet][i];
+    container.appendChild(blob);
+    blobs.push(blob);
+    (function (el, delay) {
+      setTimeout(function () {
+        el.style.opacity = MAX_OPACITY;
+      }, delay);
+    })(blob, i * 300);
+  }
+
+  setInterval(function () {
+    currentSet = (currentSet + 1) % COLOR_SETS.length;
+    blobs.forEach(function (blob) {
+      blob.style.opacity = "0";
+    });
+    setTimeout(function () {
+      blobs.forEach(function (blob, index) {
+        blob.style.background = COLOR_SETS[currentSet][index];
+        blob.style.opacity = MAX_OPACITY;
+      });
+    }, FADE_MS);
+  }, CYCLE_MS);
+
+  function animateBlob(el, index) {
+    var x = Math.random() * 100;
+    var y = Math.random() * 100;
+    var xSpeed = (Math.random() - 0.5) * SPEED_RANGE;
+    var ySpeed = (Math.random() - 0.5) * SPEED_RANGE;
+    var parallax = 0.5 + index * 0.1;
+
+    function update() {
+      requestAnimationFrame(update);
+      if (document.body.getAttribute("data-md-color-scheme") !== "slate") return;
+
+      x += xSpeed;
+      y += ySpeed;
+      if (Math.random() < 0.005) {
+        xSpeed = (Math.random() - 0.5) * SPEED_RANGE;
+        ySpeed = (Math.random() - 0.5) * SPEED_RANGE;
+      }
+      if (x > 120) x = -20;
+      if (x < -20) x = 120;
+      if (y > 120) y = -20;
+      if (y < -20) y = 120;
+
+      var pulse = 1 + Math.sin(Date.now() * PULSE_SPEED * (index + 1)) * 0.2;
+      el.style.transform = "translate(" + x * parallax + "%, " + (y + Y_SHIFT) * parallax + "%) scale(" + pulse + ")";
+    }
+    update();
+  }
+
+  blobs.forEach(animateBlob);
+})();
+
 // Header shrink-on-scroll: toggles .dkh-scrolled on <html> past a small threshold (extra.css keys
 // the logo's scale-down off that class). mkdocs-material 9.7.7 dropped the older data-md-state
 // scroll toggling in favor of a static class set at template-render time, so there's no built-in

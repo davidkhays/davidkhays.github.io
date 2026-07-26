@@ -6,6 +6,20 @@
   for the blur + shrink-on-scroll treatment. Keep in sync with the stock partial
   if upgrading mkdocs-material introduces new blocks here.
 -#}
+{#- Dark-mode-only animated background (twinkling stars + drifting aurora blobs + diagonal light
+    rays), site-wide since this partial renders on every page. Lives in the DOM at all times
+    regardless of the current light/dark toggle state — extra.css hides it entirely (display:none)
+    unless body[data-md-color-scheme="slate"] is set, and Material's palette toggle just flips
+    that attribute client-side with no page reload, so extra.js just checks that attribute itself
+    each frame rather than needing a toggle listener. The aurora blobs (large blurred circles doing
+    a slow random walk, see extra.js) are a close port of a technique the user found and asked for
+    directly. The rays (data-dkh-rays) are a separate, later addition layered on top — subtle
+    diagonal red/white streaks, each randomized the same way the star field is (own position,
+    angle, timing) so they flutter/fade independently instead of in sync. -#}
+<div class="dkh-aurora-bg" aria-hidden="true" data-dkh-aurora-blobs>
+  <div class="dkh-aurora-bg__stars" data-dkh-stars></div>
+  <div class="dkh-aurora-bg__rays" data-dkh-rays></div>
+</div>
 {% set class = "md-header dkh-header" %}
 {% if "navigation.tabs.sticky" in features %}
   {% set class = class ~ " md-header--shadow md-header--lifted" %}

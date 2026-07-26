@@ -13,7 +13,7 @@ description: Placeholder description — David K. Hays' personal site.
 
 <section class="dkh-columns">
   <div class="dkh-box">
-    <h2 class="dkh-box__title">Latest Updates</h2>
+    <h2 class="dkh-box__title">Latest</h2>
     <ul class="dkh-box__list">
       <li>Placeholder project one.</li>
       <li>Placeholder open question.</li>
@@ -35,7 +35,7 @@ description: Placeholder description — David K. Hays' personal site.
   </div>
 
   <div class="dkh-box">
-    <h2 class="dkh-box__title">Looking Ahead</h2>
+    <h2 class="dkh-box__title">On Deck</h2>
     <ul class="dkh-box__list">
       <li>Placeholder — what I'm looking forward to.</li>
     </ul>

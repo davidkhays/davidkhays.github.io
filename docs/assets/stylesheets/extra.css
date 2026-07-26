@@ -16,6 +16,125 @@ body {
   --md-typeset-a-color: var(--md-default-fg-color) !important;
 }
 
+/* --- Dark mode: aurora background -----------------------------------------------------------
+   iMessage's "Aurora" dark theme: a night-sky base, individually-twinkling stars, and slow
+   drifting colorful glows behind everything. Scoped entirely to
+   body[data-md-color-scheme="slate"] — .dkh-aurora-bg is display:none by default, so light mode
+   is completely untouched no matter what's inside it. Material's own `body{background-color:
+   var(--md-default-bg-color)}` is opaque and would otherwise paint over this, hence the
+   transparent override below (dark mode only, same selector). Everything opaque on top (header
+   once scrolled, .dkh-box cards) still uses --md-default-bg-color as normal, so legibility is
+   unaffected — this only shows through genuinely transparent/blurred areas. */
+/* Material's own slate defaults (hsla(...,90%,0.82) / 0.56) read as a muted mid-gray, not
+   dark-mode-appropriate near-white — brightened here the same way the monochrome accent override
+   at the top of this file replaces Material's palette variables, scoped to slate only so light
+   mode's near-black text is untouched. Everything using these variables (headings, body text,
+   nav) picks this up automatically. */
+body[data-md-color-scheme="slate"] {
+  background-color: transparent;
+  --md-default-fg-color: rgba(255, 255, 255, 0.94);
+  --md-default-fg-color--light: rgba(255, 255, 255, 0.75);
+}
+.dkh-aurora-bg {
+  display: none;
+}
+body[data-md-color-scheme="slate"] .dkh-aurora-bg {
+  display: block;
+  position: fixed;
+  inset: 0;
+  z-index: -1;
+  overflow: hidden;
+  background: #05060f;
+  pointer-events: none;
+}
+.dkh-aurora-bg__stars,
+.dkh-aurora-bg__rays {
+  position: absolute;
+  inset: 0;
+}
+.dkh-aurora-bg__star {
+  position: absolute;
+  width: var(--dkh-star-size);
+  height: var(--dkh-star-size);
+  border-radius: 50%;
+  background: #fff;
+  opacity: 0;
+  animation: dkh-twinkle var(--dkh-twinkle-duration) ease-in-out var(--dkh-twinkle-delay) infinite;
+}
+@keyframes dkh-twinkle {
+  0%, 100% { opacity: 0; }
+  50% { opacity: var(--dkh-twinkle-peak); }
+}
+/* Aurora blobs: 5 full-viewport-sized, heavily-blurred circles (extra.js creates and animates
+   them), each doing a slow independent random walk plus a gentle scale pulse, cross-fading through
+   a few saturated color palettes over time. Ported closely from a reference the user found and
+   pointed me at directly (colors, blur radius, sizing, walk/parallax logic) rather than designed
+   from scratch — earlier attempts (blurred ribbon shapes, then a flow-field particle system) were
+   both built from first principles and neither actually read as "aurora." */
+.dkh-aurora-bg__blob {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  border-radius: 50%;
+  filter: blur(60px);
+  opacity: 0;
+  transition: opacity 4s ease-in-out;
+  will-change: transform, opacity;
+}
+/* Diagonal light rays: thin, soft-edged streaks layered on top of the blobs, angled from the
+   top-left down toward bottom-center. CSS rotate() is clockwise for positive angles, and clockwise
+   from "straight down" swings the bottom end LEFT (6 o'clock -> 7 -> 8), not right — counter to
+   how it reads at first glance. A NEGATIVE angle (extra.js) is what swings the bottom end toward
+   the right/center, which combined with each ray starting in the left portion of the viewport is
+   what actually produces the top-left-to-bottom-center direction. Opacity (fade in/out) and
+   margin-left (sideways drift) are both driven directly by extra.js on every animation frame
+   rather than CSS @keyframes — see the comment at the top of that ray IIFE for why (a mobile-only
+   bug where CSS animations could get stuck after the light/dark toggle). Rotation stays a static,
+   per-ray CSS variable rather than something JS touches every frame, since it never needs to
+   change. */
+.dkh-aurora-bg__ray {
+  position: absolute;
+  top: 0;
+  width: 8vw;
+  height: 140vh;
+  background: linear-gradient(
+    to bottom,
+    transparent 0%,
+    rgba(210, 50, 90, 0.32) 15%,
+    rgba(150, 40, 200, 0.34) 40%,
+    rgba(220, 50, 80, 0.28) 65%,
+    transparent 100%
+  );
+  filter: blur(14px);
+  transform: rotate(var(--dkh-ray-angle));
+  transform-origin: top center;
+  mix-blend-mode: screen;
+  opacity: 0;
+  will-change: opacity, margin-left;
+}
+/* Secondary ray set (extra.js): same shape/motion, positioned further right, much lower peak
+   opacity, and a paler gradient — more white, less saturated red/purple — than the primary set. */
+.dkh-aurora-bg__ray--pale {
+  background: linear-gradient(
+    to bottom,
+    transparent 0%,
+    rgba(255, 255, 255, 0.4) 15%,
+    rgba(235, 190, 210, 0.3) 40%,
+    rgba(255, 255, 255, 0.32) 65%,
+    transparent 100%
+  );
+}
+@media (prefers-reduced-motion: reduce) {
+  .dkh-aurora-bg__star {
+    animation: none;
+    opacity: var(--dkh-twinkle-peak);
+  }
+  .dkh-aurora-bg__blob {
+    transition: none;
+  }
+}
+
 /* --- Mobile nav drawer ------------------------------------------------------------------------
    Only reachable below the 960px breakpoint where the header nav switches to the hamburger (see
    .dkh-nav below) — otherwise unstyled, so it still looked like stock Material (indigo title
@@ -666,6 +785,9 @@ body {
   opacity: 0.75;
   max-width: 42em;
 }
+body[data-md-color-scheme="slate"] .dkh-hero__sub {
+  opacity: 0.85;
+}
 /* Material's base reset strips underlines from all links (a{text-decoration:none}); since these
    links share the surrounding text's color (the site-wide monochrome override), an underline is
    what actually marks them as clickable within a paragraph. Same reasoning applies to any inline
@@ -695,6 +817,14 @@ body {
   background: var(--md-default-bg-color);
   padding: 1.5rem 1.75rem 2rem;
 }
+/* Dark mode only: frosted-glass cards over the aurora instead of a solid opaque one, same idea as
+   the mobile nav pill's translucent look. Text stays fully opaque (only the box's own background
+   is see-through), so legibility doesn't depend on how busy the aurora happens to be behind it. */
+body[data-md-color-scheme="slate"] .dkh-box {
+  background: rgba(20, 22, 34, 0.55);
+  backdrop-filter: blur(28px);
+  -webkit-backdrop-filter: blur(28px);
+}
 /* .dkh-box .dkh-box__title (not just .dkh-box__title): Material's `.md-typeset h2 { font-size:
    1.5625em; margin: 1.6em 0 .64em }` is a class+type selector, out-specificities a single-class
    override, so both its size AND its 1.6em top margin were winning here — the top margin stacked
@@ -722,6 +852,9 @@ body {
   font-size: 0.92em;
   line-height: 1.65;
   opacity: 0.85;
+}
+body[data-md-color-scheme="slate"] .dkh-box .dkh-box__list {
+  opacity: 0.92;
 }
 .dkh-box__list + .dkh-goals,
 .dkh-box__list + .dkh-countdowns {
