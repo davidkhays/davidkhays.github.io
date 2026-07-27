@@ -931,8 +931,51 @@ body[data-md-color-scheme="slate"] .dkh-box .dkh-box__list {
   opacity: 0.92;
 }
 .dkh-box__list + .dkh-goals,
-.dkh-box__list + .dkh-countdowns {
+.dkh-box__list + .dkh-countdowns,
+.dkh-box__writings + .dkh-goals,
+.dkh-box__writings + .dkh-countdowns,
+.dkh-goals + .dkh-countdowns {
   margin-top: 1.5em;
+}
+/* "Latest" box writings (docs/index.md): each entry is its own small bordered card rather than a
+   plain text link — loosely echoing how theodore.net presents project cards on his homepage,
+   scaled down to fit this box instead of that page's large scattered-photo treatment (not
+   attempting to replicate that literally, just the "distinct framed card per item" feel). */
+.dkh-box__subheading {
+  font-size: 0.92em;
+  font-weight: 700;
+  opacity: 0.7;
+  margin-bottom: 0.7em;
+}
+.dkh-box__writings {
+  display: flex;
+  flex-direction: column;
+  gap: 0.7em;
+}
+.dkh-box__writing {
+  display: block;
+  padding: 0.85em 1em;
+  border: 1px solid var(--md-default-fg-color--lighter);
+  border-radius: 14px;
+  color: inherit;
+  text-decoration: none !important;
+  transition: border-color 0.2s ease, transform 0.2s ease;
+}
+.dkh-box__writing:hover {
+  border-color: var(--md-default-fg-color--light);
+  transform: translateY(-2px);
+}
+.dkh-box__writing-meta {
+  display: block;
+  font-size: 0.76em;
+  opacity: 0.55;
+  margin-bottom: 0.3em;
+}
+.dkh-box__writing-title {
+  display: block;
+  font-size: 0.95em;
+  font-weight: 600;
+  line-height: 1.35;
 }
 
 .dkh-goal {
@@ -974,4 +1017,239 @@ body[data-md-color-scheme="slate"] .dkh-box .dkh-box__list {
 .dkh-countdown__value {
   font-size: 1.3em;
   font-weight: 600;
+}
+
+/* --- Epilogue (writings landing page) -------------------------------------------------------
+   Field structure (date+tag, title, reading time in place of a byline, blurb, thumbnail on the
+   right) modeled on joannepeng.com/writings; full page width (matching this site's existing
+   1200px content width, same as .dkh-hero/.dkh-columns — not a narrow blog-post column) and the
+   divider-line-between-entries treatment modeled on theodore.net/writings/, per direct reference
+   from the user for both. No "Read more" truncation/expand — full blurb always shown, per request. */
+.dkh-epilogue {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 1rem 1.75rem 3rem;
+}
+.dkh-epilogue__header {
+  margin-bottom: 2.5rem;
+}
+/* .dkh-epilogue .dkh-epilogue__title (not just .dkh-epilogue__title): same specificity fight as
+   .dkh-hero__heading and .dkh-box__title elsewhere in this file — Material's `.md-typeset h1`
+   is a class+type selector that beats a single class on its own. */
+.dkh-epilogue .dkh-epilogue__title {
+  font-size: 2.5em;
+  font-weight: 600;
+  color: var(--md-default-fg-color);
+  margin: 0 0 1.1em;
+  border-bottom: none;
+}
+.dkh-epilogue__subscribe-row {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.75rem;
+}
+.dkh-epilogue__subscribe {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.55em;
+  padding: 0.55em 1.1em;
+  border: 1px solid var(--md-default-fg-color--lighter);
+  border-radius: 999px;
+  font-size: 0.85em;
+  color: var(--md-default-fg-color);
+  text-decoration: none !important;
+  transition: border-color 0.2s ease, opacity 0.2s ease;
+}
+.dkh-epilogue__subscribe:hover {
+  opacity: 0.7;
+}
+.dkh-epilogue__subscribe-dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: #ff6719;
+  flex: none;
+}
+/* !important on the margins here: Material's `[dir=ltr] .md-typeset ol{margin-left:.625em}` and
+   `[dir=ltr] .md-typeset ol li{margin-left:1.25em}` are attribute+class(+type) selectors that
+   outspecificity plain classes — same recurring pattern as elsewhere in this file — so both the
+   list itself and each entry need it, or the whole block sits indented from the heading above it. */
+.dkh-epilogue__list {
+  list-style: none;
+  margin: 0 !important;
+  padding: 0;
+}
+.dkh-epilogue__entry {
+  margin-left: 0 !important;
+  border-top: 1px solid var(--md-default-fg-color--lighter);
+}
+.dkh-epilogue__entry:last-child {
+  border-bottom: 1px solid var(--md-default-fg-color--lighter);
+}
+.dkh-epilogue__entry-link {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 2.5rem;
+  padding: 1.85rem 0;
+  color: inherit;
+  text-decoration: none !important;
+}
+.dkh-epilogue__entry-text {
+  flex: 1 1 auto;
+  min-width: 0;
+}
+.dkh-epilogue__entry-meta {
+  display: flex;
+  align-items: center;
+  gap: 0.6em;
+  font-size: 0.82em;
+  opacity: 0.6;
+  margin-bottom: 0.6em;
+}
+.dkh-epilogue__entry-tag {
+  padding: 0.15em 0.65em;
+  border-radius: 999px;
+  border: 1px solid var(--md-default-fg-color--lighter);
+}
+/* .dkh-epilogue__list .dkh-epilogue__entry-title (not just the class alone): same Material
+   .md-typeset h2 specificity fight as .dkh-box__title. */
+.dkh-epilogue__list .dkh-epilogue__entry-title {
+  font-size: 1.7em;
+  font-weight: 600;
+  color: var(--md-default-fg-color);
+  margin: 0 0 0.35em;
+  border-bottom: none;
+  transition: opacity 0.2s ease;
+}
+.dkh-epilogue__entry-link:hover .dkh-epilogue__entry-title {
+  opacity: 0.6;
+}
+.dkh-epilogue__entry-time {
+  font-size: 0.85em;
+  opacity: 0.55;
+  margin-bottom: 0.7em;
+}
+.dkh-epilogue__entry-blurb {
+  font-size: 1em;
+  opacity: 0.8;
+  margin: 0;
+  max-width: 46em;
+}
+.dkh-epilogue__entry-thumb {
+  flex: none;
+  width: 240px;
+  height: 160px;
+  border-radius: 12px;
+  overflow: hidden;
+  background: var(--md-default-fg-color--lightest);
+}
+.dkh-epilogue__entry-thumb img {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+@media screen and (max-width: 960px) {
+  .dkh-epilogue__entry-link {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 1rem;
+  }
+  .dkh-epilogue__entry-thumb {
+    width: 100%;
+    height: 46vw;
+    max-height: 220px;
+  }
+}
+
+/* --- Standalone long-form posts (e.g. siteception.md) -----------------------------------------
+   For pieces that don't belong on Epilogue — static, no comments, want real footnotes rather than
+   a Substack-hosted post. Not part of the main nav; linked ad hoc from wherever makes sense (the
+   homepage Latest box, etc.), same as theodore.net/writings/immortalitytrap/, the direct reference
+   for this. Container is the site's usual 1200px width so there's genuine room for a right margin
+   — the text column itself stays narrow (see max-width below) for readability, with the leftover
+   width on the right being exactly where footnotes float out to. */
+.dkh-post {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 1.5rem 1.75rem 4rem;
+}
+.dkh-post__back {
+  display: inline-block;
+  font-size: 0.9em;
+  opacity: 0.6;
+  text-decoration: none !important;
+  margin-bottom: 2rem;
+  transition: opacity 0.2s ease;
+}
+.dkh-post__back:hover {
+  opacity: 1;
+}
+/* .dkh-post .dkh-post__title (not just the class alone): same Material .md-typeset h1
+   specificity fight as .dkh-hero__heading / .dkh-epilogue__title elsewhere in this file. */
+.dkh-post .dkh-post__title {
+  max-width: 46rem;
+  font-size: 2.4em;
+  font-weight: 600;
+  line-height: 1.2;
+  color: var(--md-default-fg-color);
+  margin: 0 0 0.3em;
+  border-bottom: none;
+}
+.dkh-post__subtitle {
+  max-width: 46rem;
+  font-size: 1.15em;
+  opacity: 0.65;
+  font-style: italic;
+  margin: 0 0 1.3em;
+}
+.dkh-post__meta {
+  display: flex;
+  align-items: center;
+  gap: 0.6em;
+  font-size: 0.9em;
+  opacity: 0.6;
+  padding-bottom: 1.5rem;
+  margin-bottom: 2rem;
+  border-bottom: 1px solid var(--md-default-fg-color--lighter);
+}
+.dkh-post__body {
+  max-width: 46rem;
+  font-size: 1.05em;
+  line-height: 1.7;
+}
+.dkh-post__body p {
+  margin: 0 0 1.4em;
+}
+/* Footnotes: the marker (<sup>1</sup>) and the note text both live inline, right after the word
+   they're attached to — .dkh-footnote itself doesn't move. Only .dkh-footnote__text (the actual
+   note) gets floated out to the right margin, and only once the viewport is wide enough for a
+   right margin to exist (see .dkh-post's width comment above) — narrower than that, it just stays
+   in normal flow immediately after the marker, small and muted, reading as an inline aside instead
+   of interrupting the sentence with a full-size clause. */
+.dkh-footnote > sup {
+  font-size: 0.75em;
+  font-weight: 600;
+  margin-left: 0.1em;
+}
+.dkh-footnote__text {
+  font-size: 0.82em;
+  line-height: 1.5;
+  opacity: 0.65;
+}
+.dkh-footnote__text > sup {
+  font-weight: 600;
+  margin-right: 0.2em;
+}
+@media screen and (min-width: 1150px) {
+  .dkh-footnote__text {
+    display: block;
+    float: right;
+    clear: right;
+    width: 280px;
+    margin-right: -340px;
+    margin-top: 0.1em;
+  }
 }

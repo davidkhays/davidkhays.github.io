@@ -1,21 +1,35 @@
 ---
-description: Placeholder description — David K. Hays' personal site.
+description: David K. Hays [ASK ABOUT THIS]
 ---
 
 <section class="dkh-hero">
   <h1 class="dkh-hero__heading">Hi! I'm David, a <span id="dkh-typed" class="dkh-hero__typed"></span></h1>
   <p class="dkh-hero__sub">
     I spent my formative years in Tokyo, experienced adolescence in Hawai'i, then moved to the UK to study the brain and behavior. I'm interested in all aspects of the human condition, but especially the neurobiology of reward and how it can be usurped — by disease and by design.<br><br>
-    You can learn more about me <a href="about/">here</a> and take a look at some of my photos <a href="gallery/">here</a>. As I architect my professional future, I'm also trying to create more consistently (and conscientiously!) <a href="epilogue/">here</a>, and I'm working on developing an accessible, foundation-level neuroscience curriculum <a href="off-syllabus/">here</a>.
+    I built this site so you can learn more about me <a href="about/">here</a> and check out some of my photos <a href="gallery/">here</a>. I'm also trying to create stuff more consistently (and conscientiously!) <a href="epilogue/">here</a>, and I'm working on developing an accessible, foundation-level neuroscience curriculum that'll soon be <a href="off-syllabus/">here</a>.
   </p>
 </section>
 
 <section class="dkh-columns">
   <div class="dkh-box">
     <h2 class="dkh-box__title">Latest</h2>
+    <div class="dkh-box__subheading">From My Desk</div>
+    <div class="dkh-box__writings">
+      <a class="dkh-box__writing" href="https://davidkhays.substack.com/p/introducing-epilogue" target="_blank" rel="noopener noreferrer">
+        <span class="dkh-box__writing-meta">Aug 2026 &middot; Substack</span>
+        <span class="dkh-box__writing-title">Introducing EPILOGUE</span>
+      </a>
+      <a class="dkh-box__writing" href="siteception/">
+        <span class="dkh-box__writing-meta">Jul 2026 &middot; Webpage</span>
+        <span class="dkh-box__writing-title">A long time coming: The story of this site (+ tutorial)</span>
+      </a>
+    </div>
+  </div>
+
+  <div class="dkh-box">
+    <h2 class="dkh-box__title">On Deck</h2>
     <ul class="dkh-box__list">
-      <li>Placeholder project one.</li>
-      <li>Placeholder open question.</li>
+      <li>Placeholder — what I'm looking forward to.</li>
     </ul>
     <div class="dkh-goals">
       <div class="dkh-goal">
@@ -31,20 +45,13 @@ description: Placeholder description — David K. Hays' personal site.
         <div class="dkh-progress"><div class="dkh-progress__fill" style="width: 15%;"></div></div>
       </div>
     </div>
-  </div>
-
-  <div class="dkh-box">
-    <h2 class="dkh-box__title">On Deck</h2>
-    <ul class="dkh-box__list">
-      <li>Placeholder — what I'm looking forward to.</li>
-    </ul>
     <div class="dkh-countdowns">
       <div class="dkh-countdown" data-target="2026-09-24T00:00:00+01:00">
-        <div class="dkh-countdown__label">Turning 22</div>
+        <div class="dkh-countdown__label">22nd Birthday</div>
         <div class="dkh-countdown__value">—</div>
       </div>
       <div class="dkh-countdown" data-target="2026-09-26T10:30:00+01:00">
-        <div class="dkh-countdown__label">Graduating from Oxford</div>
+        <div class="dkh-countdown__label">Graduation</div>
         <div class="dkh-countdown__value">—</div>
       </div>
     </div>
