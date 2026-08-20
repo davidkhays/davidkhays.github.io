@@ -52,7 +52,7 @@ description: David K. Hays [ASK ABOUT THIS]
 
     <div class="dkh-box__section">
       <div class="dkh-box__subheading">On My Mind</div>
-      <p class="dkh-box__mind">A lot! Too much, probably, in my busiest summer yet (somehow). I can't tell if I'm at the beginning or the end of my salad days; either way, it doesn't feel like the peak. The only way out is through!</p>
+      <p class="dkh-box__mind">A lot! Too much, probably, in my busiest summer yet (at least mentally). I can't tell if I'm at the beginning or the end of my salad days; either way, it doesn't feel like the peak. The only way out is through!</p>
     </div>
   </div>
 
