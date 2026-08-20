@@ -13,11 +13,26 @@
   var STAR_COUNT = 40;
   var fragment = document.createDocumentFragment();
 
+  // Kept clear of the ambient scatter (see BELT_EXCLUSION below) so Orion's Belt reads as its own
+  // distinct asterism rather than getting lost among random neighbors right next to it.
+  var BELT_EXCLUSION = { left: 58, right: 80, top: 12, bottom: 33 };
+
   for (var i = 0; i < STAR_COUNT; i++) {
+    var top, left;
+    do {
+      top = Math.random() * 100;
+      left = Math.random() * 100;
+    } while (
+      left > BELT_EXCLUSION.left &&
+      left < BELT_EXCLUSION.right &&
+      top > BELT_EXCLUSION.top &&
+      top < BELT_EXCLUSION.bottom
+    );
+
     var star = document.createElement("div");
     star.className = "dkh-aurora-bg__star";
-    star.style.top = Math.random() * 100 + "%";
-    star.style.left = Math.random() * 100 + "%";
+    star.style.top = top + "%";
+    star.style.left = left + "%";
     star.style.setProperty("--dkh-star-size", (Math.random() * 1.6 + 0.8).toFixed(2) + "px");
     star.style.setProperty("--dkh-twinkle-peak", (Math.random() * 0.5 + 0.4).toFixed(2));
     star.style.setProperty("--dkh-twinkle-duration", (Math.random() * 7 + 6).toFixed(2) + "s");
@@ -26,22 +41,20 @@
   }
 
   // Orion's Belt: fixed positions (not randomized — it's meant to be the same recognizable
-  // asterism every time, not a random cluster), bigger and a higher twinkle peak than the ambient
-  // stars so it reads as a distinct, brighter feature rather than blending into the scatter.
+  // asterism every time, not a random cluster), bigger and statically visible (no twinkle) so it
+  // reads as a distinct, stable feature rather than blending into the ambient scatter's flicker.
   var belt = [
     { left: "66%", top: "20%" },
     { left: "69%", top: "22.5%" },
     { left: "72%", top: "25%" },
   ];
-  belt.forEach(function (pos, index) {
+  belt.forEach(function (pos) {
     var star = document.createElement("div");
-    star.className = "dkh-aurora-bg__star";
+    star.className = "dkh-aurora-bg__star dkh-aurora-bg__star--static";
     star.style.left = pos.left;
     star.style.top = pos.top;
     star.style.setProperty("--dkh-star-size", "2.4px");
     star.style.setProperty("--dkh-twinkle-peak", "0.9");
-    star.style.setProperty("--dkh-twinkle-duration", (8 + index * 1).toFixed(2) + "s");
-    star.style.setProperty("--dkh-twinkle-delay", (index * -3).toFixed(2) + "s");
     fragment.appendChild(star);
   });
 
@@ -66,7 +79,7 @@
   // Mobile only (same 960px breakpoint as extra.css): rays read fainter on mobile since the blobs
   // that normally layer under/around them are hidden there (see the mobile-only block in
   // extra.css), so they're doubled here specifically to compensate.
-  var RAY_PEAK_OPACITY = window.innerWidth <= 960 ? 0.5 : 0.25;
+  var RAY_PEAK_OPACITY = window.innerWidth <= 960 ? 0.7 : 0.4;
   var DRIFT_RANGE_VW = 1.5;
   var reduceMotion =
     window.matchMedia && window.matchMedia("(prefers-reduced-motion: reduce)").matches;
@@ -339,7 +352,7 @@
   var el = document.getElementById("dkh-typed");
   if (!el) return;
 
-  var words = ["neuroscientist.", "storyteller.", "strategist.", "human."];
+  var words = ["scientist.", "storyteller.", "strategist.", "human."];
   var wordIndex = 0;
   var charIndex = 0;
   var deleting = false;
@@ -455,4 +468,120 @@
 
   render();
   setInterval(render, 30000);
+})();
+
+// "On Deck" box: date-range progress bars — a .dkh-goal with data-start/data-end (plain
+// YYYY-MM-DD, so every visitor sees the same day-granularity percentage) fills in and labels
+// itself based on how far "now" is between those two dates, instead of a hardcoded percentage.
+(function () {
+  function render() {
+    document.querySelectorAll(".dkh-goal[data-start][data-end]").forEach(function (el) {
+      var fill = el.querySelector(".dkh-progress__fill");
+      var percentEl = el.querySelector(".dkh-goal__percent");
+      if (!fill || !percentEl) return;
+
+      var start = new Date(el.getAttribute("data-start"));
+      var end = new Date(el.getAttribute("data-end"));
+      var now = new Date();
+
+      var percent = ((now - start) / (end - start)) * 100;
+      percent = Math.max(0, Math.min(100, percent));
+
+      if (isNaN(percent)) return;
+
+      fill.style.width = percent + "%";
+      percentEl.textContent = Math.round(percent) + "%";
+    });
+  }
+
+  render();
+  setInterval(render, 30000);
+})();
+
+// "On Deck" box, Goals section: "2026 is __% over" — always measured against UK time (the
+// intro text says the site's author is UK-based), not the visitor's own local time. There's no
+// timezone-aware Date constructor, so this uses the standard trick: re-parse the UK wall-clock
+// time (from toLocaleString with an explicit Europe/London timeZone) as if it were the browser's
+// own local time. Every subsequent local getter/constructor call then lines up with UK time
+// without needing UTC math anywhere.
+(function () {
+  var els = document.querySelectorAll("[data-dkh-year-progress]");
+  if (!els.length) return;
+
+  function ukNow() {
+    return new Date(new Date().toLocaleString("en-US", { timeZone: "Europe/London" }));
+  }
+
+  function render() {
+    els.forEach(function (el) {
+      var valueEl = el.querySelector(".dkh-box__year-progress-value");
+      if (!valueEl) return;
+
+      var year = parseInt(el.getAttribute("data-year"), 10);
+      var now = ukNow();
+      var start = new Date(year, 0, 1, 0, 0, 0);
+      var end = new Date(year + 1, 0, 1, 0, 0, 0);
+
+      var percent = ((now - start) / (end - start)) * 100;
+      percent = Math.max(0, Math.min(100, percent));
+
+      if (isNaN(percent)) return;
+
+      valueEl.textContent = percent.toFixed(1);
+    });
+  }
+
+  render();
+  setInterval(render, 60000);
+})();
+
+// Camera Roll carousel (homepage "Latest" box): shows one figure at a time via display:none on
+// the rest, defaulting to the first one in the markup (newest — entries are authored newest-first,
+// same convention as the Epilogue list). Prev/next just clamp at the ends rather than wrapping.
+(function () {
+  var containers = document.querySelectorAll("[data-dkh-cameraroll]");
+
+  containers.forEach(function (container) {
+    var figures = Array.prototype.slice.call(container.querySelectorAll(".dkh-box__photo"));
+    var prevBtn = container.querySelector(".dkh-box__cameraroll-nav--prev");
+    var nextBtn = container.querySelector(".dkh-box__cameraroll-nav--next");
+    if (!figures.length || !prevBtn || !nextBtn) return;
+
+    if (figures.length < 2) {
+      prevBtn.style.display = "none";
+      nextBtn.style.display = "none";
+    }
+
+    var current = 0;
+
+    function render() {
+      figures.forEach(function (figure, index) {
+        figure.style.display = index === current ? "" : "none";
+      });
+      // Move the (single, shared) nav buttons into the frame of whichever photo is now showing,
+      // so their CSS absolute-position centering always lines up with the real, current photo.
+      var frame = figures[current].querySelector(".dkh-box__photo-frame");
+      if (frame) {
+        frame.appendChild(prevBtn);
+        frame.appendChild(nextBtn);
+      }
+      prevBtn.disabled = current === 0;
+      nextBtn.disabled = current === figures.length - 1;
+    }
+
+    prevBtn.addEventListener("click", function () {
+      if (current > 0) {
+        current -= 1;
+        render();
+      }
+    });
+    nextBtn.addEventListener("click", function () {
+      if (current < figures.length - 1) {
+        current += 1;
+        render();
+      }
+    });
+
+    render();
+  });
 })();

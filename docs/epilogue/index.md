@@ -30,7 +30,7 @@ description: Writings, videos, and other things David K. Hays makes.
       <a class="dkh-epilogue__entry-link" href="https://davidkhays.substack.com/p/introducing-epilogue" target="_blank" rel="noopener noreferrer">
         <div class="dkh-epilogue__entry-text">
           <div class="dkh-epilogue__entry-meta">
-            <span class="dkh-epilogue__entry-date">Aug 2026</span>
+            <span class="dkh-epilogue__entry-date">Sep 2026</span>
             <span class="dkh-epilogue__entry-tag">Substack</span>
           </div>
           <h2 class="dkh-epilogue__entry-title">Introducing EPILOGUE</h2>

@@ -49,7 +49,7 @@ body[data-md-color-scheme="slate"] .dkh-aurora-bg {
   inset: 0;
   z-index: -1;
   overflow: hidden;
-  background: #05060f;
+  background: linear-gradient(to bottom, #030105 0%, #110226 50%, #1f1533 90%, #4c3932 100%);
   pointer-events: none;
 }
 .dkh-aurora-bg__stars,
@@ -69,6 +69,12 @@ body[data-md-color-scheme="slate"] .dkh-aurora-bg {
 @keyframes dkh-twinkle {
   0%, 100% { opacity: 0; }
   50% { opacity: var(--dkh-twinkle-peak); }
+}
+/* Orion's Belt (extra.js) uses this instead of the twinkle animation — it's meant to read as a
+   fixed, recognizable asterism, not blend into the ambient scatter's flicker. */
+.dkh-aurora-bg__star--static {
+  animation: none;
+  opacity: var(--dkh-twinkle-peak);
 }
 /* Aurora blobs: 5 full-viewport-sized, heavily-blurred circles (extra.js creates and animates
    them), each doing a slow independent random walk plus a gentle scale pulse, cross-fading through
@@ -106,10 +112,10 @@ body[data-md-color-scheme="slate"] .dkh-aurora-bg {
   background: linear-gradient(
     to bottom,
     transparent 0%,
-    rgba(178, 24, 43, 0.36) 15%,
-    rgba(140, 20, 55, 0.36) 35%,
-    rgba(150, 40, 200, 0.3) 55%,
-    rgba(178, 24, 43, 0.32) 78%,
+    rgba(178, 24, 43, 0.5) 15%,
+    rgba(140, 20, 55, 0.5) 35%,
+    rgba(150, 40, 200, 0.42) 55%,
+    rgba(178, 24, 43, 0.46) 78%,
     transparent 100%
   );
   filter: blur(14px);
@@ -125,9 +131,9 @@ body[data-md-color-scheme="slate"] .dkh-aurora-bg {
   background: linear-gradient(
     to bottom,
     transparent 0%,
-    rgba(255, 255, 255, 0.4) 15%,
-    rgba(235, 190, 210, 0.3) 40%,
-    rgba(255, 255, 255, 0.32) 65%,
+    rgba(255, 210, 215, 0.42) 15%,
+    rgba(220, 90, 120, 0.4) 40%,
+    rgba(255, 200, 205, 0.36) 65%,
     transparent 100%
   );
 }
@@ -164,7 +170,7 @@ body[data-md-color-scheme="slate"] .dkh-aurora-bg {
     display: none;
   }
   body[data-md-color-scheme="slate"] {
-    background-color: #05060f;
+    background: linear-gradient(to bottom, #030105 0%, #110226 50%, #1f1533 90%, #4c3932 100%);
   }
   body[data-md-color-scheme="slate"] .dkh-aurora-bg {
     position: absolute;
@@ -868,7 +874,8 @@ body[data-md-color-scheme="slate"] .dkh-hero__sub {
 }
 /* The paperclip-emoji "source" links in "Some Things I Believe" aren't text, so underlining them
    like the other .dkh-box__list links doesn't read the same way — no underline for these. */
-.dkh-box__list a.dkh-box__list-icon-link {
+.dkh-box__list a.dkh-box__list-icon-link,
+.dkh-countdown__label a.dkh-box__list-icon-link {
   text-decoration: none;
 }
 
@@ -908,7 +915,7 @@ body[data-md-color-scheme="slate"] .dkh-box {
 .dkh-box .dkh-box__title {
   font-size: 1.5625em;
   font-weight: 600;
-  margin: 0 0 1.1em;
+  margin: 0 0 0.55em;
   border-bottom: none;
 }
 /* `[dir=ltr] .md-typeset ul { margin-left: .625em }` is an attribute+class+type selector
@@ -925,28 +932,136 @@ body[data-md-color-scheme="slate"] .dkh-box {
   padding-left: 0;
   font-size: 0.92em;
   line-height: 1.65;
-  opacity: 0.85;
-}
-body[data-md-color-scheme="slate"] .dkh-box .dkh-box__list {
   opacity: 0.92;
 }
-.dkh-box__list + .dkh-goals,
-.dkh-box__list + .dkh-countdowns,
-.dkh-box__writings + .dkh-goals,
-.dkh-box__writings + .dkh-countdowns,
-.dkh-goals + .dkh-countdowns {
-  margin-top: 1.5em;
+body[data-md-color-scheme="slate"] .dkh-box .dkh-box__list {
+  opacity: 0.97;
 }
-/* "Latest" box writings (docs/index.md): each entry is its own small bordered card rather than a
-   plain text link — loosely echoing how theodore.net presents project cards on his homepage,
-   scaled down to fit this box instead of that page's large scattered-photo treatment (not
-   attempting to replicate that literally, just the "distinct framed card per item" feel). */
+/* "Latest" box (docs/index.md): three stacked sub-sections — Camera Roll, From My Desk, On My
+   Mind — no visible divider between them, just vertical rhythm via .dkh-box__section's own
+   sibling spacing (zero before the first section, since it sits right under the box title). */
+.dkh-box__section + .dkh-box__section {
+  margin-top: 1.6em;
+}
 .dkh-box__subheading {
-  font-size: 0.92em;
-  font-weight: 700;
-  opacity: 0.7;
+  font-size: 1em;
+  font-weight: 500;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  opacity: 0.65;
   margin-bottom: 0.7em;
 }
+/* Camera Roll is a one-photo-at-a-time carousel (JS in extra.js shows/hides .dkh-box__photo
+   figures and toggles the nav buttons). The nav buttons live inside whichever
+   .dkh-box__photo-frame is currently visible (JS moves them there on every render), positioned
+   absolutely against that frame so they're always vertically centered on the actual photo —
+   whatever its aspect ratio — and pulled out into the box's own side padding via negative
+   left/right so the photo and caption keep the box's full normal width. */
+.dkh-box__cameraroll-track {
+  width: 100%;
+}
+.dkh-box__photo-frame {
+  position: relative;
+  width: 90%;
+  margin: 0 auto;
+}
+.dkh-box__cameraroll-nav {
+  position: absolute;
+  top: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 1.4em;
+  height: 2.4em;
+  appearance: none;
+  background: none;
+  border: none;
+  padding: 0;
+  color: inherit;
+  opacity: 0.45;
+  cursor: pointer;
+  transition: opacity 0.15s ease;
+  transform: translateY(-50%);
+}
+.dkh-box__cameraroll-nav::before {
+  content: "";
+  width: 0.6em;
+  height: 0.6em;
+  border-top: 1.5px solid currentColor;
+  border-right: 1.5px solid currentColor;
+}
+.dkh-box__cameraroll-nav--prev::before {
+  transform: rotate(-135deg);
+  margin-left: 0.2em;
+}
+.dkh-box__cameraroll-nav--next::before {
+  transform: rotate(45deg);
+  margin-right: 0.2em;
+}
+.dkh-box__cameraroll-nav:hover:not(:disabled) {
+  opacity: 0.9;
+}
+.dkh-box__cameraroll-nav:disabled {
+  opacity: 0.15;
+  cursor: default;
+}
+.dkh-box__cameraroll-nav--prev {
+  left: -1.5rem;
+}
+.dkh-box__cameraroll-nav--next {
+  right: -1.5rem;
+}
+/* Double-class selectors here (not just .dkh-box__photo) to out-specificity Material's
+   .md-typeset figure / .md-typeset figcaption defaults (margin: 1em auto, centered,
+   italic captions) — same pattern used elsewhere in this file for figure/list overrides. */
+.dkh-box .dkh-box__photo {
+  margin: 0;
+  text-align: left;
+  width: 100%;
+}
+.dkh-box .dkh-box__photo img {
+  display: block;
+  width: 100%;
+  height: auto;
+  object-fit: cover;
+}
+.dkh-box .dkh-box__photo figcaption {
+  width: 90%;
+  margin: 0.7em auto 0;
+  max-width: none;
+  text-align: left;
+  font-style: normal;
+  font-size: 0.92em;
+  line-height: 1.45;
+  opacity: 0.92;
+}
+body[data-md-color-scheme="slate"] .dkh-box .dkh-box__photo figcaption {
+  opacity: 0.97;
+}
+.dkh-box a.dkh-box__plain-link {
+  color: inherit;
+  text-decoration: underline;
+}
+.dkh-box a.dkh-box__plain-link--medium {
+  font-weight: 500;
+  text-decoration: none;
+}
+.dkh-box__mind {
+  margin: 0 0 0.8em;
+  font-size: 0.92em;
+  line-height: 1.65;
+  opacity: 0.92;
+}
+body[data-md-color-scheme="slate"] .dkh-box__mind {
+  opacity: 0.97;
+}
+/* "Latest" box writings: each entry is its own small bordered card rather than a plain text link
+   — loosely echoing how theodore.net presents project cards on his homepage, scaled down to fit
+   this box instead of that page's large scattered-photo treatment (not attempting to replicate
+   that literally, just the "distinct framed card per item" feel). The diagonal gradient + blur is
+   a subtle "shiny glass" fill — translucent enough that whatever's behind the card (the aurora in
+   dark mode, the box's own background in light mode) shows through faintly rather than the card
+   being a flat, fully opaque rectangle. */
 .dkh-box__writings {
   display: flex;
   flex-direction: column;
@@ -959,6 +1074,13 @@ body[data-md-color-scheme="slate"] .dkh-box .dkh-box__list {
   border-radius: 14px;
   color: inherit;
   text-decoration: none !important;
+  background: linear-gradient(
+    135deg,
+    color-mix(in srgb, white 16%, transparent) 0%,
+    color-mix(in srgb, white 3%, transparent) 55%
+  );
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
   transition: border-color 0.2s ease, transform 0.2s ease;
 }
 .dkh-box__writing:hover {
@@ -967,8 +1089,8 @@ body[data-md-color-scheme="slate"] .dkh-box .dkh-box__list {
 }
 .dkh-box__writing-meta {
   display: block;
-  font-size: 0.76em;
-  opacity: 0.55;
+  font-size: 0.82em;
+  opacity: 0.8;
   margin-bottom: 0.3em;
 }
 .dkh-box__writing-title {
@@ -1012,7 +1134,7 @@ body[data-md-color-scheme="slate"] .dkh-box .dkh-box__list {
 }
 .dkh-countdown__label {
   font-size: 0.82em;
-  opacity: 0.7;
+  opacity: 0.8;
 }
 .dkh-countdown__value {
   font-size: 1.3em;
