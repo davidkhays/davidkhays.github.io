@@ -125,7 +125,6 @@ description: David K. Hays [ASK ABOUT THIS]
       <li>Smiling at strangers makes the world a better place. :)</li>
       <li>Ultimately, it’s all about love. <a href="https://youtu.be/TJ4K5WFWIuw?si=jMNcLz2mvUaTSfGk&t=343" target="_blank" rel="noopener noreferrer" class="dkh-box__list-icon-link">📎</a></li>
       <li>No love, however brief, is wasted. <a href="https://x.com/louisethebaker/status/1379961867922239497" target="_blank" rel="noopener noreferrer" class="dkh-box__list-icon-link">📎</a></li>
-      <li>Even if I die suddenly tomorrow, I am one of the luckiest people on Earth.</li>
       <li>Everything works out in the end.</li>
     </ul>
   </div>
