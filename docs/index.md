@@ -24,7 +24,7 @@ description: David K. Hays
             <div class="dkh-box__photo-frame">
               <img src="assets/images/cameraroll-2.jpg" alt="">
             </div>
-            <figcaption><strong>Mid-Aug '26:</strong> Family time at Winston's beck and <del>call</del> ball...</figcaption>
+            <figcaption><strong>Mid-Aug '26:</strong> Family time at Winston's beck and <del>ball</del> call...</figcaption>
           </figure>
           <figure class="dkh-box__photo">
             <div class="dkh-box__photo-frame">
