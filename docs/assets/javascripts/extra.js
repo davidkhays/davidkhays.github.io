@@ -359,7 +359,7 @@
 
   var TYPE_SPEED = 60;
   var BACK_SPEED = 60;
-  var BACK_DELAY = 1200;
+  var BACK_DELAY = 2000;
   var START_DELAY = 700;
 
   function tick() {
@@ -443,7 +443,11 @@
       if (!valueEl) return;
 
       var target = new Date(el.getAttribute("data-target"));
-      var diff = target - new Date();
+      // +1 minute: the seconds within the current minute get truncated below (Math.floor), so
+      // without this the displayed minutes always undercounts by up to 59s and reads as "behind"
+      // real time (e.g. "6m" left when it's really 6m59s) — this keeps it always >= the true
+      // remaining time instead.
+      var diff = target - new Date() + MS_PER_MINUTE;
 
       if (isNaN(diff)) {
         valueEl.textContent = "—";
@@ -527,7 +531,7 @@
 
       if (isNaN(percent)) return;
 
-      valueEl.textContent = percent.toFixed(1);
+      valueEl.textContent = Math.round(percent);
     });
   }
 

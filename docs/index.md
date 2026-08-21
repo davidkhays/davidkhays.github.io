@@ -24,7 +24,7 @@ description: David K. Hays [ASK ABOUT THIS]
             <div class="dkh-box__photo-frame">
               <img src="assets/images/cameraroll-2.jpg" alt="">
             </div>
-            <figcaption><strong>Mid-Aug '26:</strong> Family time at Winston's beck and call (ball?)...</figcaption>
+            <figcaption><strong>Mid-Aug '26:</strong> Family time at Winston's beck and <del>call</del> ball...</figcaption>
           </figure>
           <figure class="dkh-box__photo">
             <div class="dkh-box__photo-frame">
@@ -88,10 +88,6 @@ description: David K. Hays [ASK ABOUT THIS]
           <div class="dkh-countdown__label">Degree ceremony (watch live on <a href="https://www.youtube.com/@EducationalMediaServices" target="_blank" rel="noopener noreferrer" class="dkh-box__plain-link">YouTube</a>)</div>
           <div class="dkh-countdown__value">—</div>
         </div>
-        <div class="dkh-countdown" data-target="2026-09-27T09:05:00-10:00">
-          <div class="dkh-countdown__label">Last regular-season Dodgers game</div>
-          <div class="dkh-countdown__value">—</div>
-        </div>
         <div class="dkh-countdown" data-target="2026-12-25T00:00:00+00:00">
           <div class="dkh-countdown__label">My 22nd Christmas</div>
           <div class="dkh-countdown__value">—</div>
@@ -103,9 +99,9 @@ description: David K. Hays [ASK ABOUT THIS]
       <div class="dkh-box__subheading">Goals</div>
       <p class="dkh-box__mind" data-dkh-year-progress data-year="2026">2026 is <strong><span class="dkh-box__year-progress-value">—</span>%</strong> over. By 2027, I will:</p>
       <ol class="dkh-box__list">
-        <li>Submit a competitive DPhil application.</li>
+        <li>Submit a competitive DPhil app with ≥2 papers in pre-print or under review.</li>
         <li>Launch <a href="epilogue/" class="dkh-box__plain-link dkh-box__plain-link--medium">EPILOGUE</a> on two platforms.</li>
-        <li>To be determined...</li>
+        <li>Visit and document ≥1 new country!</li>
       </ol>
     </div>
   </div>

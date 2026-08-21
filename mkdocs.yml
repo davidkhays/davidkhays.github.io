@@ -18,11 +18,11 @@ theme:
     - scheme: default
       toggle:
         icon: material/weather-night
-        name: Switch to dark mode
+        name: EXCITA AURORAM
     - scheme: slate
       toggle:
         icon: material/weather-sunny
-        name: Switch to light mode
+        name: FIAT LUX
 nav:
   - Home: index.md
   - About: about.md

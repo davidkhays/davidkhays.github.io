@@ -15,4 +15,19 @@
   <meta property="og:url" content="{{ page.canonical_url }}">
   <meta property="og:image" content="{{ config.site_url }}assets/images/social-preview.png">
   <meta name="twitter:card" content="summary_large_image">
+  {#-
+    Defaults to dark mode on desktop (> 960px, same breakpoint the rest of the site uses for
+    mobile) and leaves mobile on Material's own default (light). Runs before
+    partials/javascripts/palette.html (included later, in the header), which reads this same
+    __palette storage to set data-md-color-scheme before first paint — so this never causes a
+    flash of light mode, and only applies once: a value here already means the visitor (or this
+    script, previously) has a stored preference, which always wins over the viewport check.
+  -#}
+  <script>
+    (function () {
+      if (window.innerWidth > 960 && !__md_get("__palette")) {
+        __md_set("__palette", { index: 1, color: { scheme: "slate", primary: "indigo", accent: "indigo" } });
+      }
+    })();
+  </script>
 {% endblock %}
