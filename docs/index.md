@@ -1,5 +1,5 @@
 ---
-description: David K. Hays [ASK ABOUT THIS]
+description: David K. Hays
 ---
 
 <section class="dkh-hero">
