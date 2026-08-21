@@ -1,0 +1,1377 @@
+/* --- Monochrome palette --------------------------------------------------------------------
+   Material's link/accent color (hover, active nav item, focus rings) defaults to indigo/blue
+   from its built-in primary/accent palette and doesn't have a clean "just make it black" named
+   option — the closest built-in choice (primary: black) still hardcodes indigo back in for
+   --md-typeset-a-color as a special case, and accent has no black/white entry at all. Overriding
+   the resulting variables directly instead, site-wide, per SITEMAP's plain black/gray/white look.
+   Targets `body` specifically, not :root: Material's palette JS sets
+   data-md-color-primary="indigo" (the default, since we don't configure one) directly on <body>,
+   and a rule's OWN declaration on an element always wins over an inherited value from an ancestor
+   regardless of the ancestor rule's specificity or !important — so overriding at :root never
+   reached body's subtree. !important here beats that (non-important) indigo rule since both now
+   target body directly, where importance is what decides the winner. */
+body {
+  --md-accent-fg-color: var(--md-default-fg-color) !important;
+  --md-accent-fg-color--transparent: var(--md-default-fg-color--lightest) !important;
+  --md-typeset-a-color: var(--md-default-fg-color) !important;
+}
+
+/* --- Dark mode: aurora background -----------------------------------------------------------
+   iMessage's "Aurora" dark theme: a night-sky base, individually-twinkling stars, and slow
+   drifting colorful glows behind everything. Scoped entirely to
+   body[data-md-color-scheme="slate"] — .dkh-aurora-bg is display:none by default, so light mode
+   is completely untouched no matter what's inside it. Material's own `body{background-color:
+   var(--md-default-bg-color)}` is opaque and would otherwise paint over this, hence the
+   transparent override below (dark mode only, same selector). Everything opaque on top (header
+   once scrolled, .dkh-box cards) still uses --md-default-bg-color as normal, so legibility is
+   unaffected — this only shows through genuinely transparent/blurred areas.
+   (Tried keeping this always-present at opacity:0 instead of display:none, on the theory that it'd
+   let iOS pre-build its expensive blurred layers ahead of time and avoid a first-toggle stutter —
+   measured no improvement on an actual iPhone, so reverted. Also tried masking the stutter with a
+   brief loading spinner instead of eliminating it — also reverted, no improvement measured. The
+   iPhone-only first-toggle stutter/black-screen issue is still open.) */
+/* Material's own slate defaults (hsla(...,90%,0.82) / 0.56) read as a muted mid-gray, not
+   dark-mode-appropriate near-white — brightened here the same way the monochrome accent override
+   at the top of this file replaces Material's palette variables, scoped to slate only so light
+   mode's near-black text is untouched. Everything using these variables (headings, body text,
+   nav) picks this up automatically. */
+body[data-md-color-scheme="slate"] {
+  background-color: transparent;
+  --md-default-fg-color: rgba(255, 255, 255, 0.94);
+  --md-default-fg-color--light: rgba(255, 255, 255, 0.75);
+}
+.dkh-aurora-bg {
+  display: none;
+}
+body[data-md-color-scheme="slate"] .dkh-aurora-bg {
+  display: block;
+  position: fixed;
+  inset: 0;
+  z-index: -1;
+  overflow: hidden;
+  background: linear-gradient(to bottom, #030105 0%, #110226 50%, #1f1533 90%, #4c3932 100%);
+  pointer-events: none;
+}
+.dkh-aurora-bg__stars,
+.dkh-aurora-bg__rays {
+  position: absolute;
+  inset: 0;
+}
+.dkh-aurora-bg__star {
+  position: absolute;
+  width: var(--dkh-star-size);
+  height: var(--dkh-star-size);
+  border-radius: 50%;
+  background: #fff;
+  opacity: 0;
+  animation: dkh-twinkle var(--dkh-twinkle-duration) ease-in-out var(--dkh-twinkle-delay) infinite;
+}
+@keyframes dkh-twinkle {
+  0%, 100% { opacity: 0; }
+  50% { opacity: var(--dkh-twinkle-peak); }
+}
+/* Orion's Belt (extra.js) uses this instead of the twinkle animation — it's meant to read as a
+   fixed, recognizable asterism, not blend into the ambient scatter's flicker. */
+.dkh-aurora-bg__star--static {
+  animation: none;
+  opacity: var(--dkh-twinkle-peak);
+}
+/* Aurora blobs: 5 full-viewport-sized, heavily-blurred circles (extra.js creates and animates
+   them), each doing a slow independent random walk plus a gentle scale pulse, cross-fading through
+   a few saturated color palettes over time. Ported closely from a reference the user found and
+   pointed me at directly (colors, blur radius, sizing, walk/parallax logic) rather than designed
+   from scratch — earlier attempts (blurred ribbon shapes, then a flow-field particle system) were
+   both built from first principles and neither actually read as "aurora." */
+.dkh-aurora-bg__blob {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  border-radius: 50%;
+  filter: blur(60px);
+  opacity: 0;
+  transition: opacity 4s ease-in-out;
+  will-change: transform, opacity;
+}
+/* Diagonal light rays: thin, soft-edged streaks layered on top of the blobs, angled from the
+   top-left down toward bottom-center. CSS rotate() is clockwise for positive angles, and clockwise
+   from "straight down" swings the bottom end LEFT (6 o'clock -> 7 -> 8), not right — counter to
+   how it reads at first glance. A NEGATIVE angle (extra.js) is what swings the bottom end toward
+   the right/center, which combined with each ray starting in the left portion of the viewport is
+   what actually produces the top-left-to-bottom-center direction. Opacity (fade in/out) and
+   margin-left (sideways drift) are both driven directly by extra.js on every animation frame
+   rather than CSS @keyframes — see the comment at the top of that ray IIFE for why (a mobile-only
+   bug where CSS animations could get stuck after the light/dark toggle). Rotation stays a static,
+   per-ray CSS variable rather than something JS touches every frame, since it never needs to
+   change. */
+.dkh-aurora-bg__ray {
+  position: absolute;
+  top: 0;
+  width: 8vw;
+  height: 140vh;
+  background: linear-gradient(
+    to bottom,
+    transparent 0%,
+    rgba(178, 24, 43, 0.5) 15%,
+    rgba(140, 20, 55, 0.5) 35%,
+    rgba(150, 40, 200, 0.42) 55%,
+    rgba(178, 24, 43, 0.46) 78%,
+    transparent 100%
+  );
+  filter: blur(14px);
+  transform: rotate(var(--dkh-ray-angle));
+  transform-origin: top center;
+  mix-blend-mode: screen;
+  opacity: 0;
+  will-change: opacity, margin-left;
+}
+/* Secondary ray set (extra.js): same shape/motion, positioned further right, much lower peak
+   opacity, and a paler gradient — more white, less saturated red/purple — than the primary set. */
+.dkh-aurora-bg__ray--pale {
+  background: linear-gradient(
+    to bottom,
+    transparent 0%,
+    rgba(255, 210, 215, 0.42) 15%,
+    rgba(220, 90, 120, 0.4) 40%,
+    rgba(255, 200, 205, 0.36) 65%,
+    transparent 100%
+  );
+}
+@media (prefers-reduced-motion: reduce) {
+  .dkh-aurora-bg__star {
+    animation: none;
+    opacity: var(--dkh-twinkle-peak);
+  }
+  .dkh-aurora-bg__blob {
+    transition: none;
+  }
+}
+/* Mobile only: no blurred blobs, AND no position:fixed on the aurora background itself. Two
+   separate bugs were happening together on iPhone here, confirmed separately:
+   1. The first light-to-dark switch visibly froze the page for a few seconds — traced to the cost
+      of building several heavily-blurred, full-viewport GPU layers all at once (5 blobs at 60px
+      blur, up to 20 rays at 14px blur). Fixed by dropping the blobs on mobile — the biggest single
+      cost (60px blur on 5 full-viewport circles) — while keeping the (much cheaper, 14px blur)
+      rays and the plain unblurred stars/Orion's Belt. If rays alone turn out to still cause a
+      freeze, drop `.dkh-aurora-bg__ray` back into the display:none rule below too.
+   2. Separately, the top and bottom of the screen would black out after switching to dark and stay
+      that way even after switching back to light, until a full reload. This persisted even with
+      every blurred layer removed, ruling out blur/GPU cost as ITS cause. The actual suspect was
+      .dkh-aurora-bg's own position:fixed — this project already hit and fixed the exact same
+      category of bug for the header earlier (fixed/sticky elements misbehaving around Safari's
+      dynamic collapsing toolbar); this applies that same fix here: position:absolute instead of
+      fixed on mobile, so it's laid out relative to body (which already has position:relative, and
+      naturally spans the full page height) rather than pinned to the viewport. body's own
+      background-color is set to match as a fallback so there's no gap if the absolutely-positioned
+      layer doesn't extend as far as body does. Desktop is completely unaffected either way — every
+      rule here only exists below the breakpoint. */
+@media screen and (max-width: 960px) {
+  .dkh-aurora-bg__blob {
+    display: none;
+  }
+  body[data-md-color-scheme="slate"] {
+    background: linear-gradient(to bottom, #030105 0%, #110226 50%, #1f1533 90%, #4c3932 100%);
+  }
+  body[data-md-color-scheme="slate"] .dkh-aurora-bg {
+    position: absolute;
+    top: -150px;
+    left: 0;
+    right: 0;
+    bottom: 0;
+  }
+  .dkh-aurora-bg__ray {
+    width: 32vw;
+  }
+  .dkh-aurora-bg__ray--pale {
+    display: none;
+  }
+}
+
+/* --- Mobile nav drawer ------------------------------------------------------------------------
+   Only reachable below the 960px breakpoint where the header nav switches to the hamburger (see
+   .dkh-nav below) — otherwise unstyled, so it still looked like stock Material (indigo title
+   band, blue hover/active links) next to this site's plain monochrome header nav. */
+/* No "drawer panel" look at all anymore: Material's off-canvas sidebar is a narrow (12.1rem),
+   solid-background strip that slides in from the left — stretched here to the full viewport
+   width with a transparent background instead, so only the dimmed page (the existing .md-overlay
+   scrim) shows behind the glass pill, which now centers on the whole screen rather than within a
+   strip.
+   Fades in place instead of Material's own slide-in-from-the-left: no transform at all now, just
+   opacity — a directional wipe didn't make sense once the "drawer" isn't a strip anymore. Once it
+   doesn't move, .md-sidebar--primary doesn't need the off-screen-left positioning trick either,
+   so `left` just sits at 0 permanently (opacity handles show/hide).
+   !important throughout: Material's own `[dir=ltr] .md-sidebar--primary{left:-12.1rem}` is an
+   attribute+class selector (0,2,0), out-specificities a plain class (0,1,0) — same pattern hit
+   several times elsewhere in this file; without it here the same properties silently keep
+   Material's stale values instead of the ones set below. */
+@media screen and (max-width: 960px) {
+  .md-sidebar--primary {
+    left: 0 !important;
+    width: 100vw !important;
+    background-color: transparent !important;
+    /* The panel is a real full-viewport DOM element now (not just a visual illusion), sitting at
+       Material's own z-index:5 — above the header (z-index:4) and its hamburger button. Left
+       clickable, it silently eats every click on the screen, including on the hamburger itself —
+       pointer-events:none here lets clicks fall through to whatever's actually underneath (the
+       header's hamburger, or the .md-overlay scrim that closes the drawer on an outside click) at
+       all times, since only the pill + its close button (the .dkh-drawer-pill-wrap rule below)
+       are meant to be clickable, not the full-screen transparent area around them.
+       No opacity/transition here — see .dkh-drawer-pill-wrap below for where the fade actually
+       lives and why. `opacity` animating on any ancestor of a backdrop-filter element creates a
+       new "backdrop root" per spec, constraining the filter to sample only what's painted within
+       that same isolated layer — tried the fade here first specifically to keep backdrop-filter
+       able to reach the real page behind it, but between that and smooth animation, smooth
+       animation is what was asked for. So: no backdrop-filter on the pill at all anymore either
+       (see .md-nav__list below) — pointless to keep an "always-broken-here" filter around paying
+       for nothing. */
+    pointer-events: none;
+  }
+  [data-md-toggle="drawer"]:checked ~ .md-container .md-sidebar--primary {
+    /* Material's own checked-state rule also sets transform:translateX(12.1rem) — that was the
+       slide distance for its old off-canvas mechanic, which no longer applies now that the panel
+       fades in place, but removing my OWN transform override didn't remove Material's; it was
+       still shifting everything inside 12.1rem (242px at this root font-size) to the right. */
+    transform: translateX(0) !important;
+  }
+  /* Material's scrim defaults to a fairly heavy 54%-black dim (#0000008a) — moderate dimming is
+     fine (confirmed), but the pill's own glass treatment had to fight that darkness with a strong
+     brightness() boost to read as "white" rather than "muddy". Lightening the scrim itself here
+     means less darkness to compensate for in the first place. */
+  .md-overlay {
+    background-color: rgba(0, 0, 0, 0.32);
+  }
+}
+/* No logo/title row anymore (see overrides/partials/nav.html) — the header icon is always on
+   screen already, so center the list itself both vertically and horizontally within the full
+   viewport (now that the panel spans it) instead of anchoring it under a title row. flex:none
+   keeps it sized to its own content rather than stretching to fill the column the way Material's
+   default flex:1 list would.
+   background-color:transparent: Material's `.md-nav--primary,.md-nav--primary .md-nav` carries
+   its OWN solid background (separate from .md-sidebar--primary's, already overridden above) —
+   missed the first time, so once the nav element grew to fill the full viewport along with the
+   sidebar, THIS is what was actually painting the whole screen white/dark behind the pill. */
+.md-nav--primary,
+.md-nav--primary .md-nav {
+  justify-content: center;
+  align-items: center;
+  background-color: transparent !important;
+}
+/* position:relative anchor for the close button (absolutely positioned at its corner); shrink-
+   wraps to the pill's own size for free, since it's a flex child of a column container with
+   align-items:center (default content-sized cross-axis, no extra width:fit-content trick needed). */
+.dkh-drawer-pill-wrap {
+  position: relative;
+  /* This IS where the fade lives — smooth animation was the priority once it was clear
+     backdrop-filter couldn't work here anyway (see .md-nav__list below), so there's no more
+     reason to keep the opacity transition on the distant .md-sidebar--primary ancestor; animating
+     it directly on this (small, simple) element is cheap. Also handles the pointer-events split:
+     only the pill + its close button (not the full-screen transparent area around them) should be
+     clickable, and only while the drawer is actually open. */
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.2s ease;
+}
+[data-md-toggle="drawer"]:checked ~ .md-container .dkh-drawer-pill-wrap {
+  opacity: 1;
+  pointer-events: auto;
+}
+/* No backdrop-filter here (unlike the desktop condensed nav pill, .dkh-nav): it needs an ancestor
+   between it and .md-sidebar--primary to NOT animate opacity in order to see past that ancestor
+   and blur the real page (see .md-sidebar--primary's comment) — but the fade needing to live
+   right on .dkh-drawer-pill-wrap for smooth animation puts that ancestor's opacity transition
+   exactly where backdrop-filter can't tolerate it. So: plain translucent tint instead of true
+   glass — much higher opacity than the desktop pill's 55% so it still reads as a clean, bright
+   surface rather than something that looks like it's TRYING to be glassy and failing. Taller
+   capsule instead of a wide one, to hold a vertically stacked list instead of a horizontal row.
+   No divider lines between items (Material's default .md-nav__item border-top) — consistent
+   internal spacing reads as one glass object instead of a sectioned list. */
+.md-nav--primary .md-nav__list {
+  flex: none;
+  /* vw, not % — .dkh-drawer-pill-wrap (this element's direct parent since the close-button change)
+     shrink-wraps to ITS content, i.e. this list, so a % width here has no well-defined parent size
+     to resolve against (circular: wrapper waits on list, list wants a % of wrapper). That
+     resolved to some arbitrary/too-narrow value in practice, wrapping "OFF-SYLLABUS" — vw sizes
+     against the true viewport instead, sidestepping the circularity entirely. */
+  width: min(80vw, 300px);
+  max-height: 80vh;
+  overflow-y: auto;
+  margin: 0;
+  padding: 0.6rem;
+  border-radius: 26px;
+  background: color-mix(in srgb, var(--md-default-bg-color) 90%, transparent);
+  border: 1px solid color-mix(in srgb, var(--md-default-fg-color) 10%, transparent);
+  box-shadow:
+    inset 0 1px 1px color-mix(in srgb, white 55%, transparent),
+    0 8px 30px color-mix(in srgb, black 12%, transparent);
+}
+[data-md-color-scheme="slate"] .md-nav--primary .md-nav__list {
+  box-shadow:
+    inset 0 1px 1px color-mix(in srgb, white 12%, transparent),
+    0 8px 30px color-mix(in srgb, black 40%, transparent);
+}
+/* Close (X) button: an explicit, always-visible way to close the drawer — tapping the dimmed
+   background to close isn't an obvious affordance on its own. Sits as a small solid badge at the
+   pill's corner (slightly overlapping its border, the usual modal-close convention) rather than
+   inset within it, so it reads as clearly separate from the nav items. Same <label for="__drawer">
+   toggle mechanism as the hamburger — no JS needed. */
+.dkh-drawer-close {
+  position: absolute;
+  top: -10px;
+  right: -10px;
+  width: 30px;
+  height: 30px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+  background: var(--md-default-bg-color);
+  border: 1px solid color-mix(in srgb, var(--md-default-fg-color) 14%, transparent);
+  box-shadow: 0 3px 10px color-mix(in srgb, black 18%, transparent);
+  color: var(--md-default-fg-color);
+  cursor: pointer;
+  opacity: 0.9;
+  transition: opacity 0.2s ease, transform 0.15s ease;
+}
+.dkh-drawer-close svg {
+  width: 13px;
+  height: 13px;
+}
+.dkh-drawer-close:hover {
+  opacity: 1;
+}
+.dkh-drawer-close:active {
+  transform: scale(0.9);
+}
+.md-nav--primary .md-nav__item {
+  border-top: none;
+}
+/* Match .dkh-nav__link's text styling (font-size/weight/letter-spacing/transform/opacity) so the
+   drawer reads as the same nav, not a different component; each item gets its own rounded
+   highlight (like the desktop pill's per-link hover) rather than a plain text row. */
+.md-nav--primary .md-nav__link {
+  font-size: 0.78rem;
+  font-weight: 500;
+  letter-spacing: 0.03em;
+  text-transform: uppercase;
+  opacity: 0.7;
+  /* Material's own .md-nav__link is display:flex (not a plain text block), so text-align alone
+     wouldn't center it — justify-content is what actually centers a flex child's content. */
+  justify-content: center;
+  text-align: center;
+  border-radius: 999px;
+  padding: 0.7rem 1rem;
+  margin: 0.1rem 0;
+  transition: opacity 0.2s ease, background-color 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+}
+.md-nav--primary .md-nav__link:hover,
+.md-nav--primary .md-nav__item--active > .md-nav__link {
+  opacity: 1;
+  background-color: color-mix(in srgb, var(--md-default-fg-color) 8%, transparent);
+}
+/* Staggered fade-in for each nav item once the drawer is open (opacity only — no transform/motion,
+   both per the "no directional movement" request and because animating transform on 5 items at
+   once, on top of the panel's own opacity fade recompositing the backdrop-filtered pill every
+   frame, was the likely source of the reported jank; opacity-only is far cheaper to composite).
+   #__drawer and .md-container are true siblings directly under <body> (see base.html), so
+   :checked ~ .md-container correctly scopes this to only when the drawer is open, and re-fires
+   the animation fresh each time it's reopened. */
+@keyframes dkh-nav-item-in {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+#__drawer:checked ~ .md-container .md-nav--primary .md-nav__list > .md-nav__item {
+  animation: dkh-nav-item-in 0.3s ease both;
+}
+#__drawer:checked ~ .md-container .md-nav--primary .md-nav__list > .md-nav__item:nth-child(1) { animation-delay: 0.08s; }
+#__drawer:checked ~ .md-container .md-nav--primary .md-nav__list > .md-nav__item:nth-child(2) { animation-delay: 0.12s; }
+#__drawer:checked ~ .md-container .md-nav--primary .md-nav__list > .md-nav__item:nth-child(3) { animation-delay: 0.16s; }
+#__drawer:checked ~ .md-container .md-nav--primary .md-nav__list > .md-nav__item:nth-child(4) { animation-delay: 0.2s; }
+#__drawer:checked ~ .md-container .md-nav--primary .md-nav__list > .md-nav__item:nth-child(5) { animation-delay: 0.24s; }
+
+/* Material hides the logo entirely below 76.234375em by default (`.md-logo{display:none}`),
+   expecting the site-title text to show instead — but we hide that title text too (see
+   .dkh-header .md-header__title above), so without this the logo just vanishes there. Kept at
+   Material's own breakpoint (not the tighter 960px one below): this range needs to cover all the
+   way up to 76.234375em regardless of where OUR nav-pill/hamburger switch happens, since Material
+   hides the logo independently of that. */
+@media screen and (max-width: 76.234375em) {
+  .md-header__button.md-logo {
+    display: block;
+  }
+}
+/* --- Header nav <-> hamburger switch: 960px, not Material's 76.25em (1220px) default -----------
+   Measured where the condensed nav pill's own edge actually gets close to the logo/toggle (the
+   binding constraint is the logo side): comfortable down to ~1000px, 16px from touching at 950px,
+   already overlapping by 900px. 960px keeps a small buffer before that overlap while still only
+   switching once the pill is genuinely running out of room, per request, rather than Material's
+   default (which left a few hundred px of unused space on both sides before switching).
+   Two rules, not one: Material's own hamburger-hiding rule only fires above 76.25em, so without
+   an explicit override here the hamburger would show *alongside* the nav pill in the 960px–1220px
+   gap between our breakpoint and Material's. */
+@media screen and (max-width: 960px) {
+  .md-header__button[for="__drawer"] {
+    /* Default flex order would put the hamburger right after the logo (near the left), since
+       it's second in the header's DOM order. Teddy's mobile header instead clusters the menu
+       control on the right, next to the theme toggle — reordered here with `order` rather than
+       moving it in the template, since nothing else depends on its DOM position. */
+    order: 2;
+    align-self: center;
+    transform: translateY(-0.75rem);
+    margin-left: 0.5rem;
+  }
+}
+@media screen and (min-width: 960px) {
+  .md-header__button[for="__drawer"] {
+    display: none;
+  }
+}
+/* True mobile only: center the logo instead of leaving it left-aligned. Pulling it out of flex
+   flow (so hamburger + toggle can still sit independently at the right) drops the row's natural
+   height (which otherwise comes from the tall 6.5rem icon), so min-height keeps the header from
+   collapsing — sized a bit past the icon itself, not exactly to it, so centering it doesn't need
+   an extra offset to avoid clipping its top edge against the row's bounds (an earlier attempt
+   reused the nav's -0.75rem "nudge up" offset here too, which was only ever meant to compensate
+   for the icon pushing the *nav* down, not for the icon centering itself — self-referential, so
+   it just pushed the icon partly above the header instead). */
+@media screen and (max-width: 37.5em) {
+  .dkh-header .md-header__inner {
+    /* +14px here (not just on the icon below) so everything after the header — the hero heading,
+       "Hi! I'm David...", all of it — shifts down by the same 14px too, since that content begins
+       right where this box ends. The icon's own +7px (half of 14px) is what actually lands it at
+       "shifted down by 14px": growing the box by 14px already moves its centerpoint (and so the
+       icon, which tracks top:50%) down by half that on its own, so the icon only needs to make up
+       the other half itself. */
+    min-height: calc(7rem + 14px);
+  }
+  .md-header__button.md-logo {
+    position: absolute;
+    left: 50%;
+    top: calc(50% + 7px);
+    transform: translate(-50%, -50%);
+  }
+}
+
+/* --- Full-bleed content area ------------------------------------------------------------------
+   Material sizes .md-content for a two-sidebar docs layout even with both sidebars hidden, which
+   left our full-width sections double-padded and off-center. Reset to full width here (site-wide,
+   not just the home page) since every future page reuses this same header/layout shell.
+   .md-main__inner is a flex row (not grid), so a display:none sidebar already drops out of the
+   flow on its own at desktop width — no need to also zero .md-sidebar's width, which would break
+   the mobile drawer (a position:fixed panel that depends on its own 12.1rem width to render). */
+.md-main__inner { margin: 0; max-width: none; }
+.md-content { max-width: none; }
+.md-content__inner { max-width: none; margin: 0; padding: 0; }
+.md-content__inner::before { height: 0; }
+
+/* No in-page TOC anywhere on this site (nav lives in the header, not a secondary sidebar).
+   !important: Material's own `.md-sidebar--secondary:not([hidden]){display:block}` (inside its
+   min-width:60em block) outranks a plain class selector and was winning at common desktop widths
+   (>=60em but <76.25em), silently reserving its 12.1rem column and pushing/off-centering the
+   full-bleed content next to it. */
+.md-sidebar--secondary { display: none !important; }
+/* Primary sidebar: only used as the off-canvas mobile drawer here (our own nav replaces its
+   desktop role), so hide it at the breakpoint where the condensed header nav takes over. */
+@media screen and (min-width: 960px) {
+  .md-sidebar--primary { display: none; }
+}
+
+/* --- Header: sticky, translucent/blurred, sits down from the very top, moves up + shrinks on
+   scroll --------------------------------------------------------------------------------------
+   Matches Teddy's header.css/index.css directly: a separate fixed, masked backdrop-blur layer
+   behind the header (mask-image on a plain element, unrelated to the blur itself), the header row
+   given real top padding so it isn't flush against the viewport edge, and a scroll-triggered
+   transform that pulls the whole row back up while the icon scales down — see .dkh-scrolled
+   (extra.js) for why that's a hand-written scroll listener rather than a Material CSS hook.
+   (An earlier attempt combined backdrop-filter + mask-image on one element and silently lost the
+   blur entirely in this sandbox's headless test browsers; that turned out to be a limitation of
+   those specific headless builds; kept as a fallback in mind if it ever recurs. Confirmed
+   correctly gradiated in an actual full  browser, matching Teddy's exact technique below.) */
+.dkh-header {
+  background: none;
+  color: var(--md-default-fg-color);
+  box-shadow: none;
+  transform: translateY(0);
+  transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+.dkh-scrolled .dkh-header {
+  transform: translateY(-1.5rem);
+}
+.dkh-header .md-header__inner {
+  position: relative;
+  padding-top: 1.375rem;
+  padding-bottom: 1rem;
+  transition: padding 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+.dkh-scrolled .dkh-header .md-header__inner {
+  padding-top: 1.1rem;
+  padding-bottom: 0.5rem;
+}
+.dkh-blur-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 9rem;
+  z-index: 3;
+  pointer-events: none;
+  backdrop-filter: blur(24px);
+  -webkit-backdrop-filter: blur(24px);
+  mask-image: linear-gradient(to bottom, black 0%, rgba(0, 0, 0, 0.9) 20%, rgba(0, 0, 0, 0.6) 45%, transparent 100%);
+  -webkit-mask-image: linear-gradient(to bottom, black 0%, rgba(0, 0, 0, 0.9) 20%, rgba(0, 0, 0, 0.6) 45%, transparent 100%);
+}
+/* Mobile only: no sticky/pinned header at all. iOS Safari's toolbar-collapse animation crossfades
+   a cached snapshot of the page against the freshly re-rendered live one — when the header's sticky
+   position and its own scroll-shrink transform (.dkh-scrolled above) are both actively changing
+   during that exact window, the snapshot and the live frame disagree, and the header visibly
+   detaches and floats mid-page for a moment. Two targeted fixes for that (GPU layer promotion,
+   disabling the page's elastic overscroll bounce) didn't help — simplest is to stop fighting for
+   "stay pinned at the top" on mobile at all. The header (icon + blur + nav toggle) just scrolls
+   away with the rest of the page like ordinary content instead. */
+@media screen and (max-width: 960px) {
+  .dkh-header {
+    position: static;
+  }
+  .dkh-blur-overlay {
+    display: none;
+  }
+}
+/* Scroll-to-top button: mobile only (display:none past the breakpoint — desktop's header is still
+   pinned, so it's never needed there), hidden until scrolled down a bit (extra.js toggles
+   .dkh-show-scrolltop on <html>, same rAF-throttled-scroll pattern as .dkh-scrolled). Same circular
+   icon-button look as .dkh-drawer-close, just bigger — this one's a primary tap target on its own,
+   not a small corner affordance riding on a bigger element. */
+.dkh-scrolltop {
+  position: fixed;
+  right: 1.1rem;
+  bottom: 1.1rem;
+  z-index: 3;
+  width: 46px;
+  height: 46px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+  background: var(--md-default-bg-color);
+  border: 1px solid color-mix(in srgb, var(--md-default-fg-color) 14%, transparent);
+  box-shadow: 0 3px 14px color-mix(in srgb, black 20%, transparent);
+  color: var(--md-default-fg-color);
+  cursor: pointer;
+  opacity: 0;
+  transform: translateY(6px);
+  pointer-events: none;
+  transition: opacity 0.2s ease, transform 0.2s ease;
+}
+.dkh-scrolltop svg {
+  width: 20px;
+  height: 20px;
+}
+.dkh-show-scrolltop .dkh-scrolltop {
+  opacity: 0.92;
+  transform: translateY(0);
+  pointer-events: auto;
+}
+@media screen and (min-width: 960px) {
+  .dkh-scrolltop {
+    display: none;
+  }
+}
+.dkh-header .md-header__title {
+  display: none;
+}
+/* .md-header__title used to be the flex spacer pushing the palette toggle to the right edge;
+   hiding it collapses that gap, so restore it directly on the toggle form. Also pulled up off the
+   row's default vertical center (independent of the logo, which stays centered) by the same
+   0.75rem as .dkh-nav below, so the two align exactly on the same vertical center. */
+.dkh-header .md-header__inner > [data-md-component="palette"] {
+  margin-left: auto;
+  align-self: center;
+  transform: translateY(-0.75rem);
+}
+
+.dkh-logo-swap {
+  position: relative;
+  display: inline-block;
+  width: 6.5rem;
+  height: 6.5rem;
+  color: var(--md-default-fg-color);
+  transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+.dkh-scrolled .dkh-logo-swap {
+  transform: scale(0.8);
+}
+/* Mobile only: no shrink-on-scroll for the icon. The mobile header already scrolls away with the
+   page instead of staying pinned (see .dkh-header position:static below), so this doesn't need
+   its own separate reason beyond "not wanted there" — desktop keeps the shrink, this only
+   overrides it below the breakpoint. */
+@media screen and (max-width: 960px) {
+  .dkh-scrolled .dkh-logo-swap {
+    transform: none;
+  }
+}
+/* Beats Material's own `.md-header__button.md-logo img { height:1.2rem; width:auto; fill:currentcolor }`
+   (meant for a single-color wordmark icon), which otherwise wins on specificity and shrinks this
+   to 1.2rem. object-fit:contain guards against the artwork's viewBox not being perfectly square.
+   Covers both contexts this partial renders in: the header (.md-header__button) and the mobile
+   drawer's title row (.md-nav__button). */
+.md-header__button.md-logo .dkh-logo-swap img,
+.md-nav__button.md-logo .dkh-logo-swap img {
+  position: absolute;
+  inset: 0;
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  transition: opacity 0.08s ease;
+}
+/* The artwork is plain black shapes on a transparent background with no fill/stroke of their own
+   (confirmed by inspecting the files), so unlike the earlier inline-SVG placeholders it can't pick
+   up currentColor — an externally `src`-referenced SVG's internal colors are opaque to the
+   embedding page's CSS. Flip black -> white in dark mode with a filter instead. */
+[data-md-color-scheme="slate"] .dkh-logo-swap img {
+  filter: invert(1);
+}
+.dkh-logo-swap__hover {
+  opacity: 0;
+}
+.md-header__button.md-logo:hover .dkh-logo-swap__base {
+  opacity: 0;
+}
+.md-header__button.md-logo:hover .dkh-logo-swap__hover {
+  opacity: 1;
+}
+/* Periodic auto-blink (extra.js toggles .dkh-blink on a timer). Unlike hover, this does NOT reuse
+   the crossfade transition above — eyes-open.svg and eyes-closed.svg aren't pixel-registered with
+   each other (every stroke has a tiny sub-pixel offset between the two files, confirmed with a
+   difference-blend render), so fading between them makes the whole drawing visibly double-expose
+   and jitter for a moment, not just the eyes. Inverted (dark mode) that reads as a light flicker
+   across the whole icon. A real blink is near-instant anyway, so extra.js also adds
+   .dkh-blink-instant for the full blink (both edges) to swap with no transition at all instead. */
+.dkh-logo-swap.dkh-blink .dkh-logo-swap__base {
+  opacity: 0;
+}
+.dkh-logo-swap.dkh-blink .dkh-logo-swap__hover {
+  opacity: 1;
+}
+.dkh-logo-swap.dkh-blink-instant .dkh-logo-swap__base,
+.dkh-logo-swap.dkh-blink-instant .dkh-logo-swap__hover {
+  transition: none !important;
+}
+
+/* --- Condensed, centered nav (desktop) -------------------------------------------------------
+   Horizontally centered on .md-header__inner so it stays centered regardless of how wide the
+   logo or the palette toggle are; nudged up off vertical-center (independently of the logo,
+   which stays centered) for the same reason as the toggle above. Mobile keeps Material's default
+   hamburger + drawer untouched.
+   Styled as a "liquid glass" pill: its own (stronger) blur+translucency layered on top of the
+   header's blur, a faint border and inset top highlight to read as a glass edge catching light,
+   and a soft ambient shadow. Each link gets its own rounded hover highlight and a small
+   press-down scale on :active, so the glass feels tactile per-item rather than the pill just
+   being a static backdrop. */
+.dkh-nav {
+  display: none;
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  /* width:max-content: absolutely positioned with left:50% and no explicit width, the browser's
+     shrink-to-fit sizing treats the available space as only half the header (from the 50% point
+     to the containing block's right edge) — the pill's own padding was just enough to tip past
+     that and wrap "OFF-SYLLABUS" to two lines. max-content sizes it to its natural content width
+     instead, ignoring that half-width constraint. */
+  width: max-content;
+  transform: translate(-50%, calc(-50% - 0.75rem));
+  list-style: none;
+  margin: 0;
+  padding: 0.4rem;
+  gap: 0.15rem;
+  border-radius: 999px;
+  background: color-mix(in srgb, var(--md-default-bg-color) 55%, transparent);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border: 1px solid color-mix(in srgb, var(--md-default-fg-color) 10%, transparent);
+  box-shadow:
+    inset 0 1px 1px color-mix(in srgb, white 55%, transparent),
+    0 2px 10px color-mix(in srgb, black 7%, transparent);
+  transition: box-shadow 0.3s ease, background-color 0.3s ease;
+}
+[data-md-color-scheme="slate"] .dkh-nav {
+  box-shadow:
+    inset 0 1px 1px color-mix(in srgb, white 12%, transparent),
+    0 2px 10px color-mix(in srgb, black 30%, transparent);
+}
+.dkh-nav:hover {
+  background: color-mix(in srgb, var(--md-default-bg-color) 72%, transparent);
+}
+@media screen and (min-width: 960px) {
+  .dkh-nav {
+    display: flex;
+  }
+}
+.dkh-nav__link {
+  position: relative;
+  display: inline-block;
+  color: var(--md-default-fg-color);
+  font-size: 0.78rem;
+  font-weight: 500;
+  letter-spacing: 0.03em;
+  text-transform: uppercase;
+  text-decoration: none;
+  opacity: 0.7;
+  padding: 0.5rem 1rem;
+  border-radius: 999px;
+  background-color: transparent;
+  transition: opacity 0.2s ease, background-color 0.25s cubic-bezier(0.4, 0, 0.2, 1), transform 0.15s ease;
+}
+.dkh-nav__link:hover {
+  opacity: 1;
+  background-color: color-mix(in srgb, var(--md-default-fg-color) 8%, transparent);
+}
+.dkh-nav__link:active {
+  transform: scale(0.94);
+}
+.dkh-nav__item--active .dkh-nav__link {
+  opacity: 1;
+  background-color: color-mix(in srgb, var(--md-default-fg-color) 6%, transparent);
+}
+
+/* Prism glow: toggled by extra.js when hovering the matching "here" link in the hero paragraph
+   (not on direct hover of the nav item itself — that keeps the plain highlight above). A rotating
+   conic-gradient traced as a thin RING around the pill's outline rather than a filled halo behind
+   it — the mask (two layers, one inset by `padding`, XORed via mask-composite:exclude) is what
+   keeps only that ring-width band visible instead of the whole gradient disc. Reads as a shifting
+   rainbow catching the edge of frosted glass, in the spirit of iOS's "Liquid Glass" specular
+   highlights, without the heavier filled-glow version's visual weight.
+   @property registers the angle as an animatable <angle> — plain custom properties don't
+   interpolate, so without it the gradient would just jump between keyframes instead of sweeping
+   smoothly. */
+@property --dkh-prism-angle {
+  syntax: "<angle>";
+  inherits: false;
+  initial-value: 0deg;
+}
+.dkh-nav__link.dkh-prism {
+  opacity: 1;
+}
+.dkh-nav__link.dkh-prism::before {
+  content: "";
+  position: absolute;
+  inset: -2px;
+  z-index: -1;
+  padding: 3px;
+  border-radius: inherit;
+  background: conic-gradient(
+    from var(--dkh-prism-angle),
+    #ff5f6d,
+    #ffc371,
+    #a8ff78,
+    #47e0a0,
+    #4facfe,
+    #a78bfa,
+    #ff5f6d
+  );
+  -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+  -webkit-mask-composite: xor;
+  mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+  mask-composite: exclude;
+  filter: blur(0.5px) saturate(1.5);
+  opacity: 0.9;
+  animation: dkh-prism-spin 2.5s linear infinite;
+}
+@keyframes dkh-prism-spin {
+  to {
+    --dkh-prism-angle: 360deg;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .dkh-nav__link.dkh-prism::before {
+    animation: none;
+  }
+}
+
+/* --- Home hero ---------------------------------------------------------------------------- */
+.dkh-hero {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 1rem 1.75rem 1.65rem;
+}
+@media screen and (min-width: 960px) {
+  .dkh-hero {
+    padding-top: 0.25rem;
+  }
+}
+/* .dkh-hero .dkh-hero__heading (not just .dkh-hero__heading): Material's `.md-typeset h1 { color:
+   var(--md-default-fg-color--light); font-size: 2em }` is a class+type selector, out-specificities
+   a single-class override — same pattern as the box title fix above. Its --light color is a muted
+   gray, not the full black this heading wants. */
+.dkh-hero .dkh-hero__heading {
+  font-size: 3em;
+  font-weight: 600;
+  line-height: 1.2;
+  color: var(--md-default-fg-color);
+  margin: 0 0 0.6em;
+  border-bottom: none;
+}
+/* will-change: contents: the text mutates every ~60ms while typing (see extra.js). Since it's
+   italic, glyph ink paints outside the element's layout box (slant bleeds left at the bottom of
+   descenders like "p"/"g", right at the top) — but Chrome's repaint-invalidation region is based
+   on that layout box, not the ink. On a box that resizes every keystroke, ink painted outside the
+   old box isn't always cleared before the new frame draws, which reads as clipping on new
+   characters or leftover artifacts from a previous frame's descenders. will-change hints the
+   browser to fully repaint this element's bounds each change instead of a partial damage rect. */
+.dkh-hero__typed {
+  font-weight: 600;
+  font-style: italic;
+  will-change: contents;
+}
+/* Mobile only: "Hi! I'm David, a" already fills the narrow width on its own, so the typed word
+   wraps to a line of its own — but WHICH line it wraps onto shifts as the word grows/shrinks
+   character by character (sometimes fitting the end of line 1, sometimes forced to line 2),
+   changing the heading's total height each keystroke and jolting everything below it up and down.
+   Forcing it onto its own line always (display:block) fixes the wrap point in place — only that
+   line's own width changes as it types, which doesn't move anything else. */
+@media screen and (max-width: 37.5em) {
+  .dkh-hero__typed {
+    display: block;
+  }
+  .dkh-hero .dkh-hero__heading {
+    font-size: 2.3em;
+  }
+}
+.dkh-hero__typed::after {
+  content: "";
+  display: inline-block;
+  width: 2px;
+  height: 0.9em;
+  margin-left: 2px;
+  background: currentColor;
+  vertical-align: -0.1em;
+  animation: dkh-caret 0.85s steps(1) infinite;
+}
+@keyframes dkh-caret {
+  0%, 49% { opacity: 1; }
+  50%, 100% { opacity: 0; }
+}
+.dkh-hero__sub {
+  font-size: 1.05em;
+  line-height: 1.7;
+  opacity: 0.75;
+  max-width: 42em;
+}
+body[data-md-color-scheme="slate"] .dkh-hero__sub {
+  opacity: 0.85;
+}
+/* Material's base reset strips underlines from all links (a{text-decoration:none}); since these
+   links share the surrounding text's color (the site-wide monochrome override), an underline is
+   what actually marks them as clickable within a paragraph. Same reasoning applies to any inline
+   citation-style links inside the box lists (e.g. "[Source]"). */
+.dkh-hero__sub a,
+.dkh-box__list a {
+  text-decoration: underline;
+  text-underline-offset: 0.15em;
+}
+/* The paperclip-emoji "source" links in "Some Things I Believe" aren't text, so underlining them
+   like the other .dkh-box__list links doesn't read the same way — no underline for these. */
+.dkh-box__list a.dkh-box__list-icon-link,
+.dkh-countdown__label a.dkh-box__list-icon-link {
+  text-decoration: none;
+}
+
+/* --- Three-column boxes -------------------------------------------------------------------- */
+.dkh-columns {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: stretch;
+  gap: 1.5rem;
+  max-width: 1200px;
+  /* padding, not margin-bottom: Material's `.md-typeset > :last-child { margin-bottom: 0 }` zeroes
+     a trailing margin here (this is the last element on the page) but leaves padding alone. */
+  margin: 0 auto;
+  padding: 0 1.75rem 3rem;
+}
+.dkh-box {
+  flex: 1 1 280px;
+  border: 1.2px solid var(--md-default-fg-color--lighter);
+  border-radius: 20px;
+  background: var(--md-default-bg-color);
+  padding: 1.5rem 1.75rem 2rem;
+}
+/* Dark mode only: frosted-glass cards over the aurora instead of a solid opaque one, same idea as
+   the mobile nav pill's translucent look. Text stays fully opaque (only the box's own background
+   is see-through), so legibility doesn't depend on how busy the aurora happens to be behind it. */
+body[data-md-color-scheme="slate"] .dkh-box {
+  background: rgba(20, 22, 34, 0.55);
+  backdrop-filter: blur(28px);
+  -webkit-backdrop-filter: blur(28px);
+}
+/* .dkh-box .dkh-box__title (not just .dkh-box__title): Material's `.md-typeset h2 { font-size:
+   1.5625em; margin: 1.6em 0 .64em }` is a class+type selector, out-specificities a single-class
+   override, so both its size AND its 1.6em top margin were winning here — the top margin stacked
+   on top of the box's own padding-top (the bug just fixed), but the 1.5625em size was the one
+   already on screen and looked right, so it's kept explicitly rather than shrunk along with the
+   margin fix. */
+.dkh-box .dkh-box__title {
+  font-size: 1.5625em;
+  font-weight: 600;
+  margin: 0 0 0.55em;
+  border-bottom: none;
+}
+/* `[dir=ltr] .md-typeset ul { margin-left: .625em }` is an attribute+class+type selector
+   (0,2,1) — outranks a two-class override (0,2,0) even though two classes reads like it "should"
+   win; !important is what actually settles it, verified by measuring computed styles rather than
+   eyeballing it (an earlier "looks flush" claim here was wrong, and so was a follow-up attempt
+   that shifted the whole list further left — that aligned the TEXT with the heading, past where
+   the bullet itself needed to land). margin:0 alone puts the UL's own box edge exactly under the
+   heading; outside-position then draws the bullet right at that edge, which is what "flush" here
+   actually means — the ~1em gap after it before the text is the marker's own reserved width, not
+   extra indent. */
+.dkh-box .dkh-box__list {
+  margin: 0 !important;
+  padding-left: 0;
+  font-size: 0.92em;
+  line-height: 1.65;
+  opacity: 0.92;
+}
+body[data-md-color-scheme="slate"] .dkh-box .dkh-box__list {
+  opacity: 0.97;
+}
+/* "Latest" box (docs/index.md): three stacked sub-sections — Camera Roll, From My Desk, On My
+   Mind — no visible divider between them, just vertical rhythm via .dkh-box__section's own
+   sibling spacing (zero before the first section, since it sits right under the box title). */
+.dkh-box__section + .dkh-box__section {
+  margin-top: 1.6em;
+}
+.dkh-box__subheading {
+  font-size: 1em;
+  font-weight: 500;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  opacity: 0.65;
+  margin-bottom: 0.7em;
+}
+/* Camera Roll is a one-photo-at-a-time carousel (JS in extra.js shows/hides .dkh-box__photo
+   figures and toggles the nav buttons). The nav buttons live inside whichever
+   .dkh-box__photo-frame is currently visible (JS moves them there on every render), positioned
+   absolutely against that frame so they're always vertically centered on the actual photo —
+   whatever its aspect ratio — and pulled out into the box's own side padding via negative
+   left/right so the photo and caption keep the box's full normal width. */
+.dkh-box__cameraroll-track {
+  width: 100%;
+}
+.dkh-box__photo-frame {
+  position: relative;
+  width: 90%;
+  margin: 0 auto;
+}
+.dkh-box__cameraroll-nav {
+  position: absolute;
+  top: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 1.4em;
+  height: 2.4em;
+  appearance: none;
+  background: none;
+  border: none;
+  padding: 0;
+  color: inherit;
+  opacity: 0.45;
+  cursor: pointer;
+  transition: opacity 0.15s ease;
+  transform: translateY(-50%);
+}
+.dkh-box__cameraroll-nav::before {
+  content: "";
+  width: 0.6em;
+  height: 0.6em;
+  border-top: 1.5px solid currentColor;
+  border-right: 1.5px solid currentColor;
+}
+.dkh-box__cameraroll-nav--prev::before {
+  transform: rotate(-135deg);
+  margin-left: 0.2em;
+}
+.dkh-box__cameraroll-nav--next::before {
+  transform: rotate(45deg);
+  margin-right: 0.2em;
+}
+.dkh-box__cameraroll-nav:hover:not(:disabled) {
+  opacity: 0.9;
+}
+.dkh-box__cameraroll-nav:disabled {
+  opacity: 0.15;
+  cursor: default;
+}
+.dkh-box__cameraroll-nav--prev {
+  left: -1.5rem;
+}
+.dkh-box__cameraroll-nav--next {
+  right: -1.5rem;
+}
+/* Double-class selectors here (not just .dkh-box__photo) to out-specificity Material's
+   .md-typeset figure / .md-typeset figcaption defaults (margin: 1em auto, centered,
+   italic captions) — same pattern used elsewhere in this file for figure/list overrides. */
+.dkh-box .dkh-box__photo {
+  margin: 0;
+  text-align: left;
+  width: 100%;
+}
+.dkh-box .dkh-box__photo img {
+  display: block;
+  width: 100%;
+  height: auto;
+  object-fit: cover;
+}
+.dkh-box .dkh-box__photo figcaption {
+  width: 90%;
+  margin: 0.7em auto 0;
+  max-width: none;
+  text-align: left;
+  font-style: normal;
+  font-size: 0.92em;
+  line-height: 1.45;
+  opacity: 0.92;
+}
+body[data-md-color-scheme="slate"] .dkh-box .dkh-box__photo figcaption {
+  opacity: 0.97;
+}
+.dkh-box a.dkh-box__plain-link {
+  color: inherit;
+  text-decoration: underline;
+}
+.dkh-box a.dkh-box__plain-link--medium {
+  font-weight: 500;
+  text-decoration: none;
+}
+.dkh-box__mind {
+  margin: 0 0 0.8em;
+  font-size: 0.92em;
+  line-height: 1.65;
+  opacity: 0.92;
+}
+body[data-md-color-scheme="slate"] .dkh-box__mind {
+  opacity: 0.97;
+}
+/* "Latest" box writings: each entry is its own small bordered card rather than a plain text link
+   — loosely echoing how theodore.net presents project cards on his homepage, scaled down to fit
+   this box instead of that page's large scattered-photo treatment (not attempting to replicate
+   that literally, just the "distinct framed card per item" feel). The diagonal gradient + blur is
+   a subtle "shiny glass" fill — translucent enough that whatever's behind the card (the aurora in
+   dark mode, the box's own background in light mode) shows through faintly rather than the card
+   being a flat, fully opaque rectangle. */
+.dkh-box__writings {
+  display: flex;
+  flex-direction: column;
+  gap: 0.7em;
+}
+.dkh-box__writing {
+  display: block;
+  padding: 0.85em 1em;
+  border: 1px solid var(--md-default-fg-color--lighter);
+  border-radius: 14px;
+  color: inherit;
+  text-decoration: none !important;
+  background: linear-gradient(
+    135deg,
+    color-mix(in srgb, white 16%, transparent) 0%,
+    color-mix(in srgb, white 3%, transparent) 55%
+  );
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  transition: border-color 0.2s ease, transform 0.2s ease;
+}
+.dkh-box__writing:hover {
+  border-color: var(--md-default-fg-color--light);
+  transform: translateY(-2px);
+}
+.dkh-box__writing-meta {
+  display: block;
+  font-size: 0.82em;
+  opacity: 0.8;
+  margin-bottom: 0.3em;
+}
+.dkh-box__writing-title {
+  display: block;
+  font-size: 0.95em;
+  font-weight: 600;
+  line-height: 1.35;
+}
+
+.dkh-goal {
+  margin-bottom: 1.1em;
+}
+.dkh-goal:last-child {
+  margin-bottom: 0;
+}
+.dkh-goal__label {
+  display: flex;
+  justify-content: space-between;
+  font-size: 0.82em;
+  opacity: 0.8;
+  margin-bottom: 0.4em;
+}
+.dkh-progress {
+  height: 6px;
+  border-radius: 999px;
+  background: var(--md-default-fg-color--lightest);
+  overflow: hidden;
+}
+.dkh-progress__fill {
+  height: 100%;
+  border-radius: inherit;
+  background: var(--md-default-fg-color);
+  opacity: 0.75;
+}
+
+.dkh-countdown {
+  margin-bottom: 1.1em;
+}
+.dkh-countdown:last-child {
+  margin-bottom: 0;
+}
+.dkh-countdown__label {
+  font-size: 0.82em;
+  opacity: 0.8;
+}
+.dkh-countdown__value {
+  font-size: 1.3em;
+  font-weight: 600;
+}
+
+/* --- Epilogue (writings landing page) -------------------------------------------------------
+   Field structure (date+tag, title, reading time in place of a byline, blurb, thumbnail on the
+   right) modeled on joannepeng.com/writings; full page width (matching this site's existing
+   1200px content width, same as .dkh-hero/.dkh-columns — not a narrow blog-post column) and the
+   divider-line-between-entries treatment modeled on theodore.net/writings/, per direct reference
+   from the user for both. No "Read more" truncation/expand — full blurb always shown, per request. */
+.dkh-epilogue {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 1rem 1.75rem 3rem;
+}
+.dkh-epilogue__header {
+  margin-bottom: 2.5rem;
+}
+/* .dkh-epilogue .dkh-epilogue__title (not just .dkh-epilogue__title): same specificity fight as
+   .dkh-hero__heading and .dkh-box__title elsewhere in this file — Material's `.md-typeset h1`
+   is a class+type selector that beats a single class on its own. */
+.dkh-epilogue .dkh-epilogue__title {
+  font-size: 2.5em;
+  font-weight: 600;
+  color: var(--md-default-fg-color);
+  margin: 0 0 1.1em;
+  border-bottom: none;
+}
+.dkh-epilogue__subscribe-row {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.75rem;
+}
+.dkh-epilogue__subscribe {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.55em;
+  padding: 0.55em 1.1em;
+  border: 1px solid var(--md-default-fg-color--lighter);
+  border-radius: 999px;
+  font-size: 0.85em;
+  color: var(--md-default-fg-color);
+  text-decoration: none !important;
+  transition: border-color 0.2s ease, opacity 0.2s ease;
+}
+.dkh-epilogue__subscribe:hover {
+  opacity: 0.7;
+}
+.dkh-epilogue__subscribe-dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: #ff6719;
+  flex: none;
+}
+/* !important on the margins here: Material's `[dir=ltr] .md-typeset ol{margin-left:.625em}` and
+   `[dir=ltr] .md-typeset ol li{margin-left:1.25em}` are attribute+class(+type) selectors that
+   outspecificity plain classes — same recurring pattern as elsewhere in this file — so both the
+   list itself and each entry need it, or the whole block sits indented from the heading above it. */
+.dkh-epilogue__list {
+  list-style: none;
+  margin: 0 !important;
+  padding: 0;
+}
+.dkh-epilogue__entry {
+  margin-left: 0 !important;
+  border-top: 1px solid var(--md-default-fg-color--lighter);
+}
+.dkh-epilogue__entry:last-child {
+  border-bottom: 1px solid var(--md-default-fg-color--lighter);
+}
+.dkh-epilogue__entry-link {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 2.5rem;
+  padding: 1.85rem 0;
+  color: inherit;
+  text-decoration: none !important;
+}
+.dkh-epilogue__entry-text {
+  flex: 1 1 auto;
+  min-width: 0;
+}
+.dkh-epilogue__entry-meta {
+  display: flex;
+  align-items: center;
+  gap: 0.6em;
+  font-size: 0.82em;
+  opacity: 0.6;
+  margin-bottom: 0.6em;
+}
+.dkh-epilogue__entry-tag {
+  padding: 0.15em 0.65em;
+  border-radius: 999px;
+  border: 1px solid var(--md-default-fg-color--lighter);
+}
+/* .dkh-epilogue__list .dkh-epilogue__entry-title (not just the class alone): same Material
+   .md-typeset h2 specificity fight as .dkh-box__title. */
+.dkh-epilogue__list .dkh-epilogue__entry-title {
+  font-size: 1.7em;
+  font-weight: 600;
+  color: var(--md-default-fg-color);
+  margin: 0 0 0.35em;
+  border-bottom: none;
+  transition: opacity 0.2s ease;
+}
+.dkh-epilogue__entry-link:hover .dkh-epilogue__entry-title {
+  opacity: 0.6;
+}
+.dkh-epilogue__entry-time {
+  font-size: 0.85em;
+  opacity: 0.55;
+  margin-bottom: 0.7em;
+}
+.dkh-epilogue__entry-blurb {
+  font-size: 1em;
+  opacity: 0.8;
+  margin: 0;
+  max-width: 46em;
+}
+.dkh-epilogue__entry-thumb {
+  flex: none;
+  width: 240px;
+  height: 160px;
+  border-radius: 12px;
+  overflow: hidden;
+  background: var(--md-default-fg-color--lightest);
+}
+.dkh-epilogue__entry-thumb img {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+@media screen and (max-width: 960px) {
+  .dkh-epilogue__entry-link {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 1rem;
+  }
+  .dkh-epilogue__entry-thumb {
+    width: 100%;
+    height: 46vw;
+    max-height: 220px;
+  }
+}
+
+/* --- Standalone long-form posts (e.g. siteception.md) -----------------------------------------
+   For pieces that don't belong on Epilogue — static, no comments, want real footnotes rather than
+   a Substack-hosted post. Not part of the main nav; linked ad hoc from wherever makes sense (the
+   homepage Latest box, etc.), same as theodore.net/writings/immortalitytrap/, the direct reference
+   for this. Container is the site's usual 1200px width so there's genuine room for a right margin
+   — the text column itself stays narrow (see max-width below) for readability, with the leftover
+   width on the right being exactly where footnotes float out to. */
+.dkh-post {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 1.5rem 1.75rem 4rem;
+}
+.dkh-post__back {
+  display: inline-block;
+  font-size: 0.9em;
+  opacity: 0.6;
+  text-decoration: none !important;
+  margin-bottom: 2rem;
+  transition: opacity 0.2s ease;
+}
+.dkh-post__back:hover {
+  opacity: 1;
+}
+/* .dkh-post .dkh-post__title (not just the class alone): same Material .md-typeset h1
+   specificity fight as .dkh-hero__heading / .dkh-epilogue__title elsewhere in this file. */
+.dkh-post .dkh-post__title {
+  max-width: 46rem;
+  font-size: 2.4em;
+  font-weight: 600;
+  line-height: 1.2;
+  color: var(--md-default-fg-color);
+  margin: 0 0 0.3em;
+  border-bottom: none;
+}
+.dkh-post__subtitle {
+  max-width: 46rem;
+  font-size: 1.15em;
+  opacity: 0.65;
+  font-style: italic;
+  margin: 0 0 1.3em;
+}
+.dkh-post__meta {
+  display: flex;
+  align-items: center;
+  gap: 0.6em;
+  font-size: 0.9em;
+  opacity: 0.6;
+  padding-bottom: 1.5rem;
+  margin-bottom: 2rem;
+  border-bottom: 1px solid var(--md-default-fg-color--lighter);
+}
+.dkh-post__body {
+  max-width: 46rem;
+  font-size: 1.05em;
+  line-height: 1.7;
+}
+.dkh-post__body p {
+  margin: 0 0 1.4em;
+}
+/* Footnotes: the marker (<sup>1</sup>) and the note text both live inline, right after the word
+   they're attached to — .dkh-footnote itself doesn't move. Only .dkh-footnote__text (the actual
+   note) gets floated out to the right margin, and only once the viewport is wide enough for a
+   right margin to exist (see .dkh-post's width comment above) — narrower than that, it just stays
+   in normal flow immediately after the marker, small and muted, reading as an inline aside instead
+   of interrupting the sentence with a full-size clause. */
+.dkh-footnote > sup {
+  font-size: 0.75em;
+  font-weight: 600;
+  margin-left: 0.1em;
+}
+.dkh-footnote__text {
+  font-size: 0.82em;
+  line-height: 1.5;
+  opacity: 0.65;
+}
+.dkh-footnote__text > sup {
+  font-weight: 600;
+  margin-right: 0.2em;
+}
+@media screen and (min-width: 1150px) {
+  .dkh-footnote__text {
+    display: block;
+    float: right;
+    clear: right;
+    width: 280px;
+    margin-right: -340px;
+    margin-top: 0.1em;
+  }
+}
