@@ -30,7 +30,7 @@ description: David K. Hays
             <div class="dkh-box__photo-frame">
               <img src="assets/images/cameraroll-1.jpg" alt="">
             </div>
-            <figcaption><strong>Early Aug '26:</strong> <a class="dkh-box__plain-link" href="https://manoachocolate.com/pages/farm-tours" target="_blank" rel="noopener noreferrer">Toured</a> a cacao farm, then decided to start one...</figcaption>
+            <figcaption><strong>Early Aug '26:</strong> <a class="dkh-box__plain-link" href="https://manoachocolate.com/pages/farm-tours" target="_blank" rel="noopener noreferrer">Toured</a> a cacao farm, then decided to start one. <a href="cacaofarm/" class="dkh-box__list-icon-link">📎</a></figcaption>
           </figure>
         </div>
       </div>

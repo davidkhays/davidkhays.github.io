@@ -107,6 +107,11 @@ const STATUS_LABELS = {
   dead: "Dead",
 };
 const DEFAULT_POT_DATA = { plantedDate: "", parentPod: "", soilType: "", status: "watch", notes: "", statusHistory: [] };
+const PARENT_POD_ICONS = {
+  Criollo: "assets/pods/criollo.png",
+  Forastero: "assets/pods/forastero.png",
+  Trinitario: "assets/pods/trinitario.png",
+};
 // Levels tracked on the status-history chart, worst to best won't matter here — order is
 // top-to-bottom on the y-axis. "dead" is intentionally excluded (not one of the 4 chart levels).
 const CHART_LEVELS = ["critical", "watch", "good", "thriving"];
@@ -302,6 +307,7 @@ function renderStage() {
       const bg = STATUS_COLORS[data.status] || STATUS_COLORS.watch;
       const dead = data.status === "dead" ? "pot--dead" : "";
       const days = daysSince(data.plantedDate);
+      const iconSrc = PARENT_POD_ICONS[data.parentPod];
       const posStyle =
         p.col !== undefined
           ? `grid-column:${p.col} / span ${p.size === "medium" ? 4 : 2}; grid-row:${p.row} / span ${p.size === "medium" ? 2 : 1};`
@@ -309,7 +315,10 @@ function renderStage() {
       const justifyStyle = p.justify ? `justify-self:${p.justify};` : "";
       return `
       <div class="pot ${dead}" style="${posStyle} ${justifyStyle} width:${width}; background:${bg};" data-pot="${p.id}">
-        ${days !== null ? `<span class="days">${formatAge(days)}</span>` : ""}
+        <div class="pot-body">
+          ${iconSrc ? `<img class="pot-icon" src="${iconSrc}" alt="" draggable="false">` : ""}
+          ${days !== null ? `<span class="days">${formatAge(days)}</span>` : ""}
+        </div>
       </div>`;
     })
     .join("");
@@ -380,7 +389,7 @@ function renderModal(data) {
 
     ${dateField("Date Planted", "f_planted", data.plantedDate)}
     ${selectField("Parent Pod (Suspected Cultivar)", "f_parent", data.parentPod, ["Criollo", "Forastero", "Trinitario"])}
-    ${selectField("Soil Type", "f_soil", data.soilType, ["Vermiculite mix", "Black Gold® AP", "Niu Hawaiian Style"])}
+    ${selectField("Potting soil", "f_soil", data.soilType, ["Vermiculite mix", "Black Gold® AP", "Niu Hawaiian Style"])}
 
     ${renderStatusChart(data.statusHistory)}
 

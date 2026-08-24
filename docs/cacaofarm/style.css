@@ -223,9 +223,24 @@ body {
 .pot:hover {
   transform: scale(1.06);
 }
+.pot-body {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.4rem;
+  /* Nudged down a touch from dead-center for better visual balance against the icon below. */
+  transform: translateY(0.15rem);
+}
 .pot .days {
   font-size: 1.05rem;
   font-weight: 500;
+}
+.pot-icon {
+  /* Fixed height regardless of small/medium pot (width auto so aspect ratio isn't distorted) —
+     same idea as .days not scaling with pot size. */
+  height: 0.85rem;
+  width: auto;
+  pointer-events: none;
 }
 .pot--dead {
   opacity: 0.5;

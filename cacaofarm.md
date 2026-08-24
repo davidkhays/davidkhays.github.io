@@ -26,7 +26,7 @@ The root CLAUDE.md's "keep dependencies at zero" convention does NOT apply insid
 ## Data model
 - Area: id, name.
 - Pot: id, areaId, size (small/medium), x/y position (% within a 3:4 area box), plantedDate, parentPod (text), soilType, status (thriving/good/watch/critical/dead — each a specific color), notes.
-- Photos: per-pot history, each an array entry with an upload date and a compressed base64 JPEG string, stored directly within the pot's Firestore document (or a photos subcollection if a single pot's full history risks nearing the 1 MiB Firestore document limit — check this before it becomes a problem). Compress client-side (max ~900px, JPEG quality ~0.7) before storing, same as the reference prototype does.
+- Photos: per-pot history, stored as a subcollection of small documents nested under each pot (not an array field on the pot document itself) — each holding one upload date and one compressed base64 JPEG string. This avoids ever approaching Firestore's 1 MiB per-document limit as photo history accumulates over a pot's lifetime.
 
 ## Current pot layout (source of truth for seeding real data)
 - Area 1: 19 small pots, staggered rows of 3/4/4/4/4.
