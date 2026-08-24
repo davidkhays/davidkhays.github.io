@@ -14,6 +14,13 @@
   --watch: #ffe493;
   --critical: #ffd6e0;
   --dead: #d9d9d9;
+  /* Saturated versions of the pastel status colors above, used only for the selected status
+     chip's outline (the pastel fills themselves are too washed-out to read clearly as a border). */
+  --thriving-outline: #00b303;
+  --good-outline: #2fa84f;
+  --watch-outline: #ff5f29;
+  --critical-outline: #ff3b5c;
+  --dead-outline: #8a8a8a;
 }
 * {
   box-sizing: border-box;
@@ -217,7 +224,7 @@ body {
   transform: scale(1.06);
 }
 .pot .days {
-  font-size: 0.95rem;
+  font-size: 1.05rem;
   font-weight: 500;
 }
 .pot--dead {
@@ -493,9 +500,13 @@ body {
   text-align: center;
   cursor: pointer;
   font-family: inherit;
+  opacity: 0.55;
+  transition: opacity 0.15s ease;
 }
 .status-chip--selected {
-  border-color: var(--accent);
+  /* border-color set inline per chip (see app.js) — matches that specific status's own
+     saturated outline color instead of one uniform color for every status. */
+  opacity: 1;
 }
 .status-chip:disabled {
   cursor: default;

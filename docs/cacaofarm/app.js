@@ -92,6 +92,13 @@ const STATUS_COLORS = {
   critical: "var(--critical)",
   dead: "var(--dead)",
 };
+const STATUS_OUTLINE_COLORS = {
+  thriving: "var(--thriving-outline)",
+  good: "var(--good-outline)",
+  watch: "var(--watch-outline)",
+  critical: "var(--critical-outline)",
+  dead: "var(--dead-outline)",
+};
 const STATUS_LABELS = {
   thriving: "Thriving",
   good: "Good",
@@ -335,6 +342,21 @@ function renderModal(data) {
       <button class="close-x" id="closeModal" aria-label="Close">&#10005;</button>
     </div>
 
+    <div class="field">
+      <label>Status</label>
+      <div class="status-row">
+        ${Object.keys(STATUS_COLORS)
+          .map((s) => {
+            const selected = data.status === s;
+            const borderStyle = selected ? ` border-color:${STATUS_OUTLINE_COLORS[s]};` : "";
+            return `
+          <button type="button" class="status-chip ${selected ? "status-chip--selected" : ""}"
+            data-status="${s}" style="background:${STATUS_COLORS[s]};color:${STATUS_OUTLINE_COLORS[s]};${borderStyle}"${isOwner ? "" : " disabled"}>${STATUS_LABELS[s]}</button>`;
+          })
+          .join("")}
+      </div>
+    </div>
+
     <div class="photo-box">
       <div class="photo-frame" id="photoFrame">
         ${photos.length ? `<img src="${photos[photoIndex].dataUrl}" alt="">` : `<span class="ph-empty">No photo yet</span>`}
@@ -359,19 +381,6 @@ function renderModal(data) {
     ${dateField("Date Planted", "f_planted", data.plantedDate)}
     ${selectField("Parent Pod (Suspected Cultivar)", "f_parent", data.parentPod, ["Criollo", "Forastero", "Trinitario"])}
     ${selectField("Soil Type", "f_soil", data.soilType, ["Vermiculite mix", "Black Gold® AP", "Niu Hawaiian Style"])}
-
-    <div class="field">
-      <label>Status</label>
-      <div class="status-row">
-        ${Object.keys(STATUS_COLORS)
-          .map(
-            (s) => `
-          <button type="button" class="status-chip ${data.status === s ? "status-chip--selected" : ""}"
-            data-status="${s}" style="background:${STATUS_COLORS[s]}"${isOwner ? "" : " disabled"}>${STATUS_LABELS[s]}</button>`
-          )
-          .join("")}
-      </div>
-    </div>
 
     ${renderStatusChart(data.statusHistory)}
 
