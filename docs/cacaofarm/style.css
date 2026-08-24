@@ -242,6 +242,11 @@ body {
   width: auto;
   pointer-events: none;
 }
+.pot-icon--forastero {
+  /* This source image reads visually larger than the other two at the same height — sized down
+     ~15% to match. */
+  height: 0.7225rem;
+}
 .pot--dead {
   opacity: 0.5;
 }

@@ -316,7 +316,7 @@ function renderStage() {
       return `
       <div class="pot ${dead}" style="${posStyle} ${justifyStyle} width:${width}; background:${bg};" data-pot="${p.id}">
         <div class="pot-body">
-          ${iconSrc ? `<img class="pot-icon" src="${iconSrc}" alt="" draggable="false">` : ""}
+          ${iconSrc ? `<img class="pot-icon${data.parentPod === "Forastero" ? " pot-icon--forastero" : ""}" src="${iconSrc}" alt="" draggable="false">` : ""}
           ${days !== null ? `<span class="days">${formatAge(days)}</span>` : ""}
         </div>
       </div>`;
