@@ -1,0 +1,40 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>cacaofarm</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <div class="topbar">
+    <a class="topbar__back" href="../">&larr; davidkhays.com</a>
+  </div>
+
+  <div class="page-head">
+    <div class="page-head__row">
+      <h1 class="page-head__title">Seed Tracker v1</h1>
+      <select class="area-select" id="areaSelect"></select>
+    </div>
+    <p class="page-head__subtitle"><span class="page-head__emoji">🧑‍🌾</span> &nbsp;David K. Hays &nbsp;&nbsp;<span class="page-head__emoji">📍</span> Kailua, Hawai'i &nbsp;&nbsp;&nbsp;<span class="page-head__emoji">🌱</span> <em>T. cacao</em></p>
+  </div>
+
+  <div class="stage-wrap">
+    <div class="stage" id="stage"></div>
+    <div class="legend">
+      <span><i style="background:var(--thriving)"></i>Thriving</span>
+      <span><i style="background:var(--good)"></i>Good</span>
+      <span><i style="background:var(--watch)"></i>Watch</span>
+      <span><i style="background:var(--critical)"></i>Critical</span>
+      <span><i style="background:var(--dead)"></i>Dead</span>
+    </div>
+    <div class="auth-box" id="authBox"></div>
+  </div>
+
+  <div class="overlay" id="overlay">
+    <div class="modal" id="modal"></div>
+  </div>
+
+  <script type="module" src="app.js"></script>
+</body>
+</html>

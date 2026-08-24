@@ -1,0 +1,19 @@
+rules_version = '2';
+
+// Access model (see CACAOFARM.md): public read for anyone, write restricted to David's one
+// account only. Matched on the signed-in email claim rather than UID — Firebase's ID token email
+// claim for email/password sign-in is server-verified, not client-spoofable, so this is just as
+// secure as matching on UID, and avoids needing to look up the UID separately.
+//
+// This file is the source of truth, but Firestore doesn't read it automatically from this repo —
+// paste its contents into Firebase Console > Firestore Database > Rules, then click Publish,
+// every time it changes.
+service cloud.firestore {
+  match /databases/{database}/documents {
+    match /{document=**} {
+      allow read: if true;
+      allow write: if request.auth != null
+                   && request.auth.token.email == "farmer@davidkhays.com";
+    }
+  }
+}

@@ -21,7 +21,7 @@ Migrating from a hand-written static homepage to Material for MkDocs, closely mo
 - Pause and confirm before restructuring nav, URLs, or page architecture — check against SITEMAP.md first.
 
 ## About me (David)
-- Beginner. Very limited website coding experience (some school exposure, assume it is mostly forgotten). This is my first real project using VS Code, git, and a static site generator.
+- Beginner. Limited website coding experience (some school exposure, assume it is mostly forgotten). This is my first real project using VS Code, git, and a static site generator.
 - Do not assume I know standard workflows or shorthand. Spell out exactly what to do, including basic git commands explicitly — say `git add .`, `git commit -m "..."`, `git push`, not just "commit and push."
 - Tell me exactly WHERE to do something (terminal vs. editor vs. browser) and be unambiguous about file paths, indentation, and folder nesting — vague phrasing has caused real mistakes before (e.g. a misplaced nested folder from an ambiguous instruction).
 
@@ -30,3 +30,7 @@ Migrating from a hand-written static homepage to Material for MkDocs, closely mo
 - Double-check claims before stating them as fact — don't assert something is "correct" or "centered" or "working" without having actually verified it.
 - No sycophancy. Prioritize precision and accuracy over avoiding friction.
 - Avoid overusing "genuinely" and other superfluous intensifiers.
+
+
+## Subprojects
+- docs/cacaofarm/ is a separate personal tool — read CACAOFARM.md before touching that folder. It has its own conventions; notably, the Firebase SDK is a required dependency there, which is an intentional exception to this file's "zero dependencies" rule.
