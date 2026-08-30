@@ -402,8 +402,8 @@ body {
   width: 1.7rem;
   height: 1.7rem;
   border-radius: 50%;
-  background: rgba(0, 0, 0, 0.45);
-  color: #fff;
+  background: rgba(255, 255, 255, 0.85);
+  color: var(--fg);
   border: none;
   font-size: 0.9rem;
   cursor: pointer;

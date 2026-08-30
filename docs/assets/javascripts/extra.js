@@ -573,18 +573,70 @@
       nextBtn.disabled = current === figures.length - 1;
     }
 
-    prevBtn.addEventListener("click", function () {
+    function goPrev() {
       if (current > 0) {
         current -= 1;
         render();
       }
-    });
-    nextBtn.addEventListener("click", function () {
+    }
+    function goNext() {
       if (current < figures.length - 1) {
         current += 1;
         render();
       }
-    });
+    }
+
+    prevBtn.addEventListener("click", goPrev);
+    nextBtn.addEventListener("click", goNext);
+
+    if (figures.length > 1) {
+      // Desktop trackpad: a two-finger horizontal swipe fires as a wheel event with deltaX set.
+      // Only treat it as a swipe when the gesture is clearly more horizontal than vertical (so a
+      // normal vertical page-scroll over the carousel isn't hijacked), and debounce with a short
+      // cooldown since a single physical swipe fires many rapid wheel events.
+      var wheelCooldown = false;
+      container.addEventListener(
+        "wheel",
+        function (e) {
+          if (Math.abs(e.deltaX) <= Math.abs(e.deltaY)) return;
+          e.preventDefault();
+          if (wheelCooldown) return;
+          wheelCooldown = true;
+          setTimeout(function () {
+            wheelCooldown = false;
+          }, 400);
+          if (e.deltaX > 0) goNext();
+          else goPrev();
+        },
+        { passive: false }
+      );
+
+      // Mobile: a plain single-finger swipe.
+      var touchStartX = null;
+      var touchStartY = null;
+      container.addEventListener(
+        "touchstart",
+        function (e) {
+          touchStartX = e.touches[0].clientX;
+          touchStartY = e.touches[0].clientY;
+        },
+        { passive: true }
+      );
+      container.addEventListener(
+        "touchend",
+        function (e) {
+          if (touchStartX === null) return;
+          var dx = e.changedTouches[0].clientX - touchStartX;
+          var dy = e.changedTouches[0].clientY - touchStartY;
+          touchStartX = null;
+          if (Math.abs(dx) > 40 && Math.abs(dx) > Math.abs(dy) * 1.5) {
+            if (dx < 0) goNext();
+            else goPrev();
+          }
+        },
+        { passive: true }
+      );
+    }
 
     render();
   });

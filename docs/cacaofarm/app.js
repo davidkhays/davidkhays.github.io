@@ -84,6 +84,14 @@ const POT_LAYOUT = AREAS.flatMap((area) => {
 function potNumber(potId) {
   return potId.split("-p")[1];
 }
+// dir: -1 for previous, 1 for next. Stops at the first/last pot in the area (no wraparound) —
+// used for arrow-key and swipe navigation between pots while the modal is open.
+function adjacentPotId(potId, dir) {
+  const areaId = potId.split("-p")[0];
+  const ids = POT_LAYOUT.filter((p) => p.areaId === areaId).map((p) => p.id);
+  const idx = ids.indexOf(potId) + dir;
+  return idx >= 0 && idx < ids.length ? ids[idx] : null;
+}
 
 const STATUS_COLORS = {
   thriving: "var(--thriving)",
@@ -146,21 +154,42 @@ async function loadPhotos(potId) {
 async function addPhoto(potId, dataUrl) {
   await addDoc(collection(db, "pots", potId, "photos"), {
     dataUrl,
-    date: new Date().toISOString().slice(0, 10),
+    date: localDateStr(),
     uploadedAt: serverTimestamp(),
   });
 }
 
 // ---- Helpers ----
-function daysSince(dateStr) {
+// YYYY-MM-DD in the browser's local timezone (not toISOString(), which is UTC — that made
+// dates roll over to the next day for anything done in Hawaii after 2pm HST).
+function localDateStr() {
+  const d = new Date();
+  const m = String(d.getMonth() + 1).padStart(2, "0");
+  const day = String(d.getDate()).padStart(2, "0");
+  return `${d.getFullYear()}-${m}-${day}`;
+}
+function parseFlexDate(dateStr) {
   if (!dateStr) return null;
-  // Tolerates "/" as well as "-" separators, and just hides the counter (rather than showing
-  // "NaNd") for anything that still doesn't parse — a bad stored value shouldn't break the pot
-  // card, just quietly show no day count until the date's corrected.
+  // Tolerates "/" as well as "-" separators.
   const d = new Date(dateStr.replace(/\//g, "-") + "T00:00:00");
-  if (isNaN(d.getTime())) return null;
+  return isNaN(d.getTime()) ? null : d;
+}
+function daysSince(dateStr) {
+  const d = parseFlexDate(dateStr);
+  // Just hides the counter (rather than showing "NaNd") for anything that doesn't parse — a bad
+  // stored value shouldn't break the pot card, just quietly show no day count until it's fixed.
+  if (!d) return null;
   const diff = Math.floor((Date.now() - d.getTime()) / 86400000);
   return diff < 0 ? 0 : diff;
+}
+// Same idea as daysSince(), but relative to an arbitrary target date (e.g. a photo's upload
+// date) instead of "now" — used to show "Day X" alongside each photo in its history.
+function dayNumberFor(plantedDate, targetDate) {
+  const planted = parseFlexDate(plantedDate);
+  const target = parseFlexDate(targetDate);
+  if (!planted || !target) return null;
+  const diff = Math.floor((target.getTime() - planted.getTime()) / 86400000);
+  return diff < 0 ? null : diff;
 }
 // Days under 42 (6 weeks) show as "Xd"; 42 up to 84 (12 weeks) show as weeks; 84+ show as
 // months. Day-based thresholds (not rounded-weeks thresholds) so the switchover lands exactly
@@ -377,7 +406,14 @@ function renderModal(data) {
         }
       </div>
       <div class="photo-meta">
-        ${photos.length ? `Uploaded ${photos[photoIndex].date} &middot; ${photoIndex + 1} of ${photos.length}` : "No history yet"}
+        ${
+          photos.length
+            ? (() => {
+                const dayNum = dayNumberFor(data.plantedDate, photos[photoIndex].date);
+                return `Uploaded ${photos[photoIndex].date}${dayNum !== null ? ` (Day ${dayNum})` : ""} &middot; ${photoIndex + 1} of ${photos.length}`;
+              })()
+            : "No history yet"
+        }
       </div>
       ${
         isOwner
@@ -476,7 +512,7 @@ async function updatePot(changes) {
 // while some other control is mid-interaction, so there's no dropdown to accidentally close.
 async function updateStatus(newStatus) {
   const pot = getPot(openPotId);
-  const today = new Date().toISOString().slice(0, 10);
+  const today = localDateStr();
   const history = pot.statusHistory.slice();
   const last = history[history.length - 1];
   if (!last || last.status !== newStatus || last.date !== today) {
@@ -614,6 +650,15 @@ document.getElementById("overlay").addEventListener("click", (e) => {
 });
 document.addEventListener("keydown", (e) => {
   if (e.key === "Escape" && openPotId) closeModal();
+  if (!openPotId) return;
+  // Don't hijack arrow keys while the user is actually typing/navigating cursor position inside
+  // a field (e.g. the date boxes) — only switch pots when focus isn't in a form control.
+  const tag = document.activeElement && document.activeElement.tagName;
+  if (tag === "INPUT" || tag === "TEXTAREA" || tag === "SELECT") return;
+  if (e.key === "ArrowLeft" || e.key === "ArrowRight") {
+    const nextId = adjacentPotId(openPotId, e.key === "ArrowLeft" ? -1 : 1);
+    if (nextId) openPot(nextId);
+  }
 });
 
 async function init() {
