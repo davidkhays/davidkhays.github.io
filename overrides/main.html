@@ -7,6 +7,51 @@
 -#}
 {% extends "base.html" %}
 
+{#-
+  base.html's site_meta block unconditionally renders <link rel="icon" href="{{
+  config.theme.favicon | url }}">, and Material's schema fills in its own default favicon path
+  even when theme.favicon is left unset in mkdocs.yml (there's no way to just omit the tag) — so
+  this reproduces the rest of that block verbatim and swaps only the favicon line for an
+  inline-SVG emoji instead, rather than shipping both and letting the emoji one silently override
+  a real, wasted image request. (cacaofarm/index.html is a separate standalone page, not templated
+  through here, so its own 🌱 favicon is untouched.)
+-#}
+{% import "partials/language.html" as lang with context %}
+{% block site_meta %}
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  {% if page.meta and page.meta.description %}
+    <meta name="description" content="{{ page.meta.description }}">
+  {% elif config.site_description %}
+    <meta name="description" content="{{ config.site_description }}">
+  {% endif %}
+  {% if page.meta and page.meta.author %}
+    <meta name="author" content="{{ page.meta.author }}">
+  {% elif config.site_author %}
+    <meta name="author" content="{{ config.site_author }}">
+  {% endif %}
+  {% if page.canonical_url %}
+    <link rel="canonical" href="{{ page.canonical_url }}">
+  {% endif %}
+  {% if page.previous_page %}
+    <link rel="prev" href="{{ page.previous_page.url | url }}">
+  {% endif %}
+  {% if page.next_page %}
+    <link rel="next" href="{{ page.next_page.url | url }}">
+  {% endif %}
+  {% if config.extra.alternate is iterable %}
+    {% for alt in config.extra.alternate %}
+      <link rel="alternate" href="{{ alt.link | url }}" hreflang="{{ alt.lang | d(lang.t('language')) }}">
+    {% endfor %}
+  {% endif %}
+  {% if "rss" in config.plugins %}
+    <link rel="alternate" type="application/rss+xml" title="{{ lang.t('rss.created') }}" href="{{ 'feed_rss_created.xml' | url }}">
+    <link rel="alternate" type="application/rss+xml" title="{{ lang.t('rss.updated') }}" href="{{ 'feed_rss_updated.xml' | url }}">
+  {% endif %}
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Ctext y='.9em' font-size='90'%3E%F0%9F%9A%80%3C/text%3E%3C/svg%3E">
+  <meta name="generator" content="mkdocs-{{ mkdocs_version }}, mkdocs-material-9.7.7">
+{% endblock %}
+
 {% block extrahead %}
   <meta property="og:type" content="website">
   <meta property="og:site_name" content="{{ config.site_name }}">
@@ -15,4 +60,24 @@
   <meta property="og:url" content="{{ page.canonical_url }}">
   <meta property="og:image" content="{{ config.site_url }}assets/images/social-preview.png">
   <meta name="twitter:card" content="summary_large_image">
+  <script>
+    // First-visit-only default: desktop (real mouse/trackpad) gets dark/Aurora mode, mobile/touch
+    // gets light mode. mkdocs.yml's theme.palette lists "default" (light) at index 0 and "slate"
+    // (dark) at index 1 — this writes the exact same {index, color} shape Material's own toggle
+    // writes on a manual click (see mkdocs-material's bundle.js, function "us"), via the __md_get/
+    // __md_set helpers that partials/javascripts/base.html already defined just above this block.
+    // partials/javascripts/palette.html (included later, in the header) is what actually reads
+    // this back and applies it to <body> before the page paints — since this block runs first and
+    // writes synchronously, there's no flash of the wrong theme on a fresh visit. Once a visitor
+    // manually toggles the theme, __md_get("__palette") is already set, so this never runs again
+    // and their own choice always wins from then on.
+    if (!__md_get("__palette")) {
+      var isDesktop = window.matchMedia("(hover: hover) and (pointer: fine)").matches;
+      var index = isDesktop ? 1 : 0;
+      __md_set("__palette", {
+        index: index,
+        color: { media: null, scheme: index ? "slate" : "default", primary: "indigo", accent: "indigo" },
+      });
+    }
+  </script>
 {% endblock %}

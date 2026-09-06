@@ -398,12 +398,8 @@ function renderModal(data) {
     <div class="photo-box">
       <div class="photo-frame" id="photoFrame">
         ${photos.length ? `<img src="${photos[photoIndex].dataUrl}" alt="">` : `<span class="ph-empty">No photo yet</span>`}
-        ${
-          photos.length > 1
-            ? `<button class="photo-nav photo-nav--prev" id="prevPhoto" aria-label="Previous photo">&#8249;</button>
-               <button class="photo-nav photo-nav--next" id="nextPhoto" aria-label="Next photo">&#8250;</button>`
-            : ""
-        }
+        ${photoIndex > 0 ? `<button class="photo-nav photo-nav--prev" id="prevPhoto" aria-label="Previous photo">&#8249;</button>` : ""}
+        ${photoIndex < photos.length - 1 ? `<button class="photo-nav photo-nav--next" id="nextPhoto" aria-label="Next photo">&#8250;</button>` : ""}
       </div>
       <div class="photo-meta">
         ${

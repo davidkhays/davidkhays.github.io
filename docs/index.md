@@ -41,11 +41,11 @@ description: David K. Hays
       <div class="dkh-box__writings">
         <a class="dkh-box__writing" href="https://davidkhays.substack.com/p/introducing-epilogue" target="_blank" rel="noopener noreferrer">
           <span class="dkh-box__writing-meta">Sep 2026 &middot; Substack</span>
-          <span class="dkh-box__writing-title">Introducing EPILOGUE</span>
+          <span class="dkh-box__writing-title">Introducing EPILOGUE:<br>Full circles and foggy horizons</span>
         </a>
         <a class="dkh-box__writing" href="siteception/">
-          <span class="dkh-box__writing-meta">Aug 2026 &middot; Webpage</span>
-          <span class="dkh-box__writing-title">A long time coming: The story of this website (+ tutorial)</span>
+          <span class="dkh-box__writing-meta">Sep 2026 &middot; Webpage</span>
+          <span class="dkh-box__writing-title">Why (and how) I built this site</span>
         </a>
       </div>
     </div>
@@ -71,12 +71,12 @@ description: David K. Hays
           <div class="dkh-progress"><div class="dkh-progress__fill" style="width: 0%;"></div></div>
         </div>
         <div class="dkh-goal">
-          <div class="dkh-goal__label"><span>Writing my first textbook chapter</span><span>20%</span></div>
-          <div class="dkh-progress"><div class="dkh-progress__fill" style="width: 20%;"></div></div>
+          <div class="dkh-goal__label"><span>Writing my first textbook chapter</span><span>70%</span></div>
+          <div class="dkh-progress"><div class="dkh-progress__fill" style="width: 70%;"></div></div>
         </div>
         <div class="dkh-goal">
-          <div class="dkh-goal__label"><span>Applying to doctorate programs</span><span>10%</span></div>
-          <div class="dkh-progress"><div class="dkh-progress__fill" style="width: 10%;"></div></div>
+          <div class="dkh-goal__label"><span>Applying to doctorate programs</span><span>20%</span></div>
+          <div class="dkh-progress"><div class="dkh-progress__fill" style="width: 20%;"></div></div>
         </div>
       </div>
     </div>
@@ -101,7 +101,7 @@ description: David K. Hays
       <ol class="dkh-box__list">
         <li>Submit a competitive DPhil app with ≥2 papers in pre-print or under review.</li>
         <li>Launch <a href="epilogue/" class="dkh-box__plain-link dkh-box__plain-link--medium">EPILOGUE</a> on two platforms.</li>
-        <li>Visit and document ≥1 new country!</li>
+        <li>Visit and document ≥1 new country! (#23? Does Antarctica count?)</li>
       </ol>
     </div>
   </div>

@@ -6,13 +6,13 @@ description: Why (and how) I built this site.
 <article class="dkh-post">
   <a href="../" class="dkh-post__back">&larr; Home</a>
 
-  <h1 class="dkh-post__title">A long time coming: The story of this website (+ tutorial)</h1>
+  <h1 class="dkh-post__title">A long time coming: Why (and how) I built this site</h1>
   <p class="dkh-post__subtitle">Featuring serendipity, Thiel fellows, and the Personal Panopticon.</p>
 
   <div class="dkh-post__meta">
     <span>© David K. Hays</span>
     <span aria-hidden="true">&middot;</span>
-    <span>Aug 2026</span>
+    <span>Sep 2026</span>
     <span aria-hidden="true">&middot;</span>
     <span>X min read</span>
   </div>
