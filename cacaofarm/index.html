@@ -1,0 +1,48 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Seed Tracker by DKH</title>
+  <meta name="description" content="Cacao seedling tracker for David K. Hays' home nursery.">
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Ctext y='.9em' font-size='90'%3E%F0%9F%8C%B1%3C/text%3E%3C/svg%3E">
+  <meta property="og:type" content="website">
+  <meta property="og:title" content="Seed Tracker by DKH">
+  <meta property="og:description" content="Follow along as my cacao seedlings grow!">
+  <meta property="og:url" content="https://davidkhays.com/cacaofarm/">
+  <meta property="og:image" content="https://davidkhays.com/assets/images/social-preview.png">
+  <meta name="twitter:card" content="summary_large_image">
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <div class="topbar">
+    <a class="topbar__back" href="../">&larr; davidkhays.com</a>
+  </div>
+
+  <div class="page-head">
+    <div class="page-head__row">
+      <h1 class="page-head__title">Seed Tracker v1</h1>
+      <select class="area-select" id="areaSelect"></select>
+    </div>
+    <p class="page-head__subtitle"><span class="page-head__emoji">📍</span> Kailua, Hawai'i &nbsp;&nbsp;&nbsp;<span class="page-head__emoji">🌱</span> <em>Theobroma cacao</em></p>
+  </div>
+
+  <div class="stage-wrap">
+    <div class="stage" id="stage"></div>
+    <div class="legend">
+      <span><i style="background:var(--thriving)"></i>Thriving</span>
+      <span><i style="background:var(--good)"></i>Good</span>
+      <span><i style="background:var(--watch)"></i>Watch</span>
+      <span><i style="background:var(--critical)"></i>Critical</span>
+      <span><i style="background:var(--dead)"></i>Dead</span>
+    </div>
+    <div class="auth-box" id="authBox"></div>
+  </div>
+
+  <div class="overlay" id="overlay">
+    <div class="modal" id="modal"></div>
+  </div>
+
+  <script type="module" src="app.js"></script>
+</body>
+</html>
