@@ -85,11 +85,11 @@ description: David K. Hays
       <div class="dkh-box__subheading">Milestones</div>
       <div class="dkh-countdowns">
         <div class="dkh-countdown" data-target="2026-09-26T10:30:00+01:00">
-          <div class="dkh-countdown__label">Degree ceremony (watch live on <a href="https://www.youtube.com/@EducationalMediaServices" target="_blank" rel="noopener noreferrer" class="dkh-box__plain-link">YouTube</a>)</div>
+          <div class="dkh-countdown__label">Degree ceremony (watch live on <a href="https://www.youtube.com/watch?v=NHtqkHXvbu0&list=PLZwrJvw6GUmc" target="_blank" rel="noopener noreferrer" class="dkh-box__plain-link">YouTube</a>)</div>
           <div class="dkh-countdown__value">—</div>
         </div>
         <div class="dkh-countdown" data-target="2026-12-25T00:00:00+00:00">
-          <div class="dkh-countdown__label">My 22nd Christmas</div>
+          <div class="dkh-countdown__label">Christmas day :)</div>
           <div class="dkh-countdown__value">—</div>
         </div>
       </div>
