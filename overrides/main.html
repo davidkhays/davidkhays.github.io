@@ -48,7 +48,14 @@
     <link rel="alternate" type="application/rss+xml" title="{{ lang.t('rss.created') }}" href="{{ 'feed_rss_created.xml' | url }}">
     <link rel="alternate" type="application/rss+xml" title="{{ lang.t('rss.updated') }}" href="{{ 'feed_rss_updated.xml' | url }}">
   {% endif %}
-  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Ctext y='.9em' font-size='90'%3E%F0%9F%9A%80%3C/text%3E%3C/svg%3E">
+  {#- hide_nav currently only marks the hiatus page (docs/index.md — see overrides/partials/header.html)
+      reused here rather than a second near-duplicate front-matter flag, since both just mean "this
+      is the hiatus page" right now. 🔧 there, 🚀 everywhere else. -#}
+  {% if page.meta and page.meta.hide_nav %}
+    <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Ctext y='.9em' font-size='90'%3E%F0%9F%94%A7%3C/text%3E%3C/svg%3E">
+  {% else %}
+    <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Ctext y='.9em' font-size='90'%3E%F0%9F%9A%80%3C/text%3E%3C/svg%3E">
+  {% endif %}
   <meta name="generator" content="mkdocs-{{ mkdocs_version }}, mkdocs-material-9.7.7">
 {% endblock %}
 
@@ -60,24 +67,4 @@
   <meta property="og:url" content="{{ page.canonical_url }}">
   <meta property="og:image" content="{{ config.site_url }}assets/images/social-preview.png">
   <meta name="twitter:card" content="summary_large_image">
-  <script>
-    // First-visit-only default: desktop (real mouse/trackpad) gets dark/Aurora mode, mobile/touch
-    // gets light mode. mkdocs.yml's theme.palette lists "default" (light) at index 0 and "slate"
-    // (dark) at index 1 — this writes the exact same {index, color} shape Material's own toggle
-    // writes on a manual click (see mkdocs-material's bundle.js, function "us"), via the __md_get/
-    // __md_set helpers that partials/javascripts/base.html already defined just above this block.
-    // partials/javascripts/palette.html (included later, in the header) is what actually reads
-    // this back and applies it to <body> before the page paints — since this block runs first and
-    // writes synchronously, there's no flash of the wrong theme on a fresh visit. Once a visitor
-    // manually toggles the theme, __md_get("__palette") is already set, so this never runs again
-    // and their own choice always wins from then on.
-    if (!__md_get("__palette")) {
-      var isDesktop = window.matchMedia("(hover: hover) and (pointer: fine)").matches;
-      var index = isDesktop ? 1 : 0;
-      __md_set("__palette", {
-        index: index,
-        color: { media: null, scheme: index ? "slate" : "default", primary: "indigo", accent: "indigo" },
-      });
-    }
-  </script>
 {% endblock %}

@@ -26,26 +26,34 @@
 {% elif "navigation.tabs" not in features %}
   {% set class = class ~ " md-header--shadow" %}
 {% endif %}
+{#- "Hiatus mode" toggle: set `hide_nav: true` in a page's front matter (currently docs/index.md —
+    see docs/home-real.md for the real homepage content it's standing in for) to drop just the
+    navigation links (desktop condensed list + the mobile hamburger/drawer trigger) from the
+    header, while keeping everything else — logo, spacing, palette toggle — exactly as normal. To
+    swap back: remove `hide_nav: true` from whichever page has it (or move it to a different page). -#}
+{% set hide_nav = page.meta and page.meta.hide_nav %}
 <header class="{{ class }}" data-md-component="header">
   <nav class="md-header__inner md-grid" aria-label="{{ lang.t('header') }}">
     <a href="{{ config.extra.homepage | d(nav.homepage.url, true) | url }}" title="{{ config.site_name | e }}" class="md-header__button md-logo" aria-label="{{ config.site_name }}" data-md-component="logo">
       {% include "partials/logo.html" %}
     </a>
-    <label class="md-header__button md-icon" for="__drawer">
-      {% set icon = config.theme.icon.menu or "material/menu" %}
-      {% include ".icons/" ~ icon ~ ".svg" %}
-    </label>
+    {% if not hide_nav %}
+      <label class="md-header__button md-icon" for="__drawer">
+        {% set icon = config.theme.icon.menu or "material/menu" %}
+        {% include ".icons/" ~ icon ~ ".svg" %}
+      </label>
 
-    <!-- Condensed, centered nav (desktop only; see extra.css for the breakpoint) -->
-    <ul class="dkh-nav">
-      {% for nav_item in nav.items %}
-        {% if not nav_item.is_homepage %}
-          <li class="dkh-nav__item{{ ' dkh-nav__item--active' if nav_item.active else '' }}">
-            <a href="{{ nav_item.url | url }}" class="dkh-nav__link">{{ nav_item.title }}</a>
-          </li>
-        {% endif %}
-      {% endfor %}
-    </ul>
+      <!-- Condensed, centered nav (desktop only; see extra.css for the breakpoint) -->
+      <ul class="dkh-nav">
+        {% for nav_item in nav.items %}
+          {% if not nav_item.is_homepage %}
+            <li class="dkh-nav__item{{ ' dkh-nav__item--active' if nav_item.active else '' }}">
+              <a href="{{ nav_item.url | url }}" class="dkh-nav__link">{{ nav_item.title }}</a>
+            </li>
+          {% endif %}
+        {% endfor %}
+      </ul>
+    {% endif %}
 
     <div class="md-header__title" data-md-component="header-title">
       <div class="md-header__ellipsis">
@@ -105,7 +113,8 @@
 {#- Mobile only (see extra.css): the header stops staying pinned on scroll to sidestep an iOS
     Safari rendering bug, which means the hamburger drawer trigger scrolls away too. This button
     (hidden until scrolled down a bit, see extra.js) is the way back to it on a long page without
-    swiping all the way back up by hand. -#}
+    swiping all the way back up by hand. Harmless to leave rendered on hide_nav pages too — with no
+    drawer trigger to scroll back to, extra.js's scroll listener simply never shows it. -#}
 <button type="button" class="dkh-scrolltop" aria-label="Scroll to top">
   <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
     <path d="M12 19V5M5 12l7-7 7 7" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
