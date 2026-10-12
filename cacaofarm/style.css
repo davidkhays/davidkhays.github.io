@@ -1,0 +1,541 @@
+/* Matches davidkhays.com's own light-mode tokens (Material's defaults, since this page isn't
+   themed by Material — no dark mode here, this is a standalone tool, not part of the portfolio
+   pages). Values pulled directly from the compiled Material stylesheet: font stack, fg/bg colors,
+   primary indigo, card border-radius. */
+:root {
+  --fg: #000000de;
+  --fg-light: #0000008a;
+  --fg-lighter: #00000052;
+  --bg: #fff;
+  --primary: #4051b5;
+  --accent: #4a4a4a;
+  --thriving: #88f189;
+  --good: #c6efbf;
+  --watch: #ffe493;
+  --critical: #ffd6e0;
+  --dead: #d9d9d9;
+  /* Saturated versions of the pastel status colors above, used only for the selected status
+     chip's outline (the pastel fills themselves are too washed-out to read clearly as a border). */
+  --thriving-outline: #00b303;
+  --good-outline: #2fa84f;
+  --watch-outline: #ff5f29;
+  --critical-outline: #ff3b5c;
+  --dead-outline: #8a8a8a;
+}
+* {
+  box-sizing: border-box;
+}
+body {
+  margin: 0;
+  background: var(--bg);
+  color: var(--fg);
+  font-family: -apple-system, BlinkMacSystemFont, Helvetica, Arial, sans-serif;
+  -webkit-font-smoothing: antialiased;
+}
+
+.topbar {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  max-width: 30rem;
+  margin: 0 auto;
+  padding: 1.1rem 1.25rem 0.5rem;
+}
+.topbar__back {
+  color: var(--fg-light);
+  text-decoration: none;
+  font-size: 0.85rem;
+  white-space: nowrap;
+}
+.topbar__back:hover {
+  color: var(--fg);
+}
+.page-head {
+  max-width: 30rem;
+  margin: 0.25rem auto 0;
+  padding: 0 1.25rem;
+}
+.page-head__row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 0.75rem;
+  margin-bottom: 0.5rem;
+}
+.page-head__title {
+  margin: 0;
+  font-size: 1.5rem;
+  font-weight: 700;
+  color: var(--fg);
+  white-space: nowrap;
+}
+.page-head__subtitle {
+  margin: 0;
+  font-size: 0.8rem;
+  color: var(--fg-light);
+}
+.page-head__subtitle em {
+  font-style: italic;
+}
+.page-head__emoji {
+  color: initial;
+  opacity: 1;
+}
+.area-select {
+  flex: 0 1 auto;
+  width: auto;
+  max-width: 8.5rem;
+  font-size: 0.95rem;
+  font-weight: 600;
+  color: var(--fg);
+  background: var(--bg);
+  border: 1.2px solid var(--fg-lighter);
+  border-radius: 10px;
+  padding: 0.5rem 2rem 0.5rem 0.7rem;
+  font-family: inherit;
+  /* Native <select> arrows don't reliably respect padding-right across browsers (often sit
+     nearly flush with the edge regardless) — appearance:none removes it, and this draws a
+     custom chevron with proper breathing room via background-position instead. */
+  appearance: none;
+  -webkit-appearance: none;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6' viewBox='0 0 10 6'%3E%3Cpath d='M1 1l4 4 4-4' stroke='%238a8a8a' stroke-width='1.5' fill='none' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 0.8rem center;
+}
+
+.auth-box {
+  max-width: 30rem;
+  margin: 1.25rem auto 0;
+  padding: 0 1.25rem;
+  font-size: 0.78rem;
+  color: var(--fg-light);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 0.6rem;
+  min-height: 1.6rem;
+}
+.auth-box__link {
+  background: var(--bg);
+  border: 1.2px solid var(--fg-lighter);
+  border-radius: 8px;
+  color: var(--fg);
+  font: inherit;
+  font-size: 0.78rem;
+  cursor: pointer;
+  padding: 0.45rem 1rem;
+}
+.auth-box__link:hover {
+  border-color: var(--primary);
+  color: var(--primary);
+}
+.auth-box__form {
+  display: flex;
+  gap: 0.4rem;
+  align-items: center;
+}
+.auth-box__form input {
+  font-family: inherit;
+  font-size: 16px; /* same iOS auto-zoom issue as the field inputs — see that comment */
+  border: 1.2px solid var(--fg-lighter);
+  border-radius: 6px;
+  padding: 0.3rem 0.5rem;
+  width: 8rem;
+}
+.auth-box__error {
+  color: var(--critical);
+  font-size: 0.75rem;
+}
+
+.stage-wrap {
+  max-width: 30rem;
+  margin: 0 auto;
+  padding: 0.75rem 1.25rem 2.5rem;
+}
+.stage {
+  container-type: inline-size;
+  display: grid;
+  width: 100%;
+  aspect-ratio: 3 / 3.75;
+  gap: 4%;
+  padding: 6%;
+  background: var(--bg);
+  border: 1.2px solid var(--fg-lighter);
+  border-radius: 20px;
+  box-sizing: border-box;
+}
+/* Each area is its own grid track layout — see POT_LAYOUT in app.js for exactly which pot sits
+   in which cell. The empty row (no pots assigned to it) is what creates the visible gap between
+   pot clusters, matching the reference photos. */
+.stage--area1 {
+  grid-template-columns: repeat(8, 1fr);
+  grid-template-rows: repeat(3, 1fr) 0.25fr repeat(2, 1fr);
+  /* Real gap only comes from the explicit 0.6fr spacer row (between row3 and row4) — row-gap:0
+     removes the base .stage's inherited 4% gap that was otherwise also showing up between every
+     row WITHIN each cluster (row1-2, row2-3, row4-5), which should be touching. */
+  row-gap: 0;
+  column-gap: 2%;
+  /* col1 is anchored to the left padding edge and doesn't move when column-gap changes (only
+     later columns shift) — so centering the whole row means adjusting the anchor itself, not the
+     gap again. */
+  padding-left: 3.49%;
+  padding-top: 3.087%;
+  padding-bottom: 3.072%;
+}
+.stage--area2 {
+  grid-template-columns: repeat(8, 1fr);
+  /* row-gap:0 — the base .stage's gap:4% shorthand applies between EVERY pair of adjacent row
+     tracks too, which with 9 explicit rows (8 gaps x 4% = 32%) was silently adding 32% on top of
+     rows already summing to 100%, blowing way past the container. Zeroing row-gap here means
+     these percentages are the whole story again; column-gap (still 4%, inherited) is untouched,
+     so left/right medium spacing is unaffected. */
+  row-gap: 0;
+  /* Rows 1-3 (small cluster + spacer) as fixed % — completely unaffected by anything below.
+     Medium pots are sized independent of their row height (width is an explicit cqw value, not
+     tied to cell size — see .pot), so rows 4/5/7/8 don't need to fully contain a 40cqw circle —
+     they only need center-to-center distance between the top pair (row4/5 midpoint) and bottom
+     pair (row7/8 midpoint) to be >= the circle's diameter, with a safety margin. The overflow
+     past each pair's own row-span is absorbed by row3/row6 (both spacers, no pots in them). Row 9
+     is genuine unused trailing space, which is what shifts the whole medium block up. */
+  grid-template-rows: 20.47% 20.47% 10.71% 5.98% 5.98% 21.41% 5.98% 5.98% 3.02%;
+  padding-left: 3.674%;
+  padding-top: 3.704%;
+  padding-bottom: 12.135%;
+}
+.pot {
+  align-self: center;
+  justify-self: center;
+  /* width is set inline per pot (see app.js) as a % of the whole stage, NOT the grid cell — grid
+     column/row tracks aren't the same physical size here (8 columns over a portrait 3:4 box), so
+     sizing off cell width alone made 2-row-tall medium pots taller than their actual row height,
+     overflowing into neighboring rows. The grid now only controls position; size is independent. */
+  aspect-ratio: 1;
+  border-radius: 50%;
+  border: 2px solid #ffffffb3;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  color: var(--fg);
+  user-select: none;
+  transition: transform 0.15s ease;
+}
+.pot:hover {
+  transform: scale(1.06);
+}
+.pot-body {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.4rem;
+  /* Nudged down a touch from dead-center for better visual balance against the icon below. */
+  transform: translateY(0.15rem);
+}
+.pot .days {
+  font-size: 1.05rem;
+  font-weight: 500;
+}
+.pot-icon {
+  /* Fixed height regardless of small/medium pot (width auto so aspect ratio isn't distorted) —
+     same idea as .days not scaling with pot size. */
+  height: 0.85rem;
+  width: auto;
+  pointer-events: none;
+}
+.pot-icon--forastero {
+  /* This source image reads visually larger than the other two at the same height — sized down
+     ~15% to match. */
+  height: 0.7225rem;
+}
+.pot--dead {
+  opacity: 0.5;
+}
+.empty-state {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 100%;
+  color: var(--fg-light);
+  font-size: 0.8rem;
+  padding: 1.5rem;
+  text-align: center;
+}
+
+.legend {
+  max-width: 30rem;
+  margin: 0.9rem auto 0;
+  padding: 0 1.25rem;
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 0.7rem;
+  font-size: 0.72rem;
+  color: var(--fg-light);
+}
+.legend span {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.3rem;
+}
+.legend i {
+  width: 0.55rem;
+  height: 0.55rem;
+  border-radius: 50%;
+  display: inline-block;
+}
+
+/* Modal */
+.overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.4);
+  display: none;
+  align-items: center;
+  justify-content: center;
+  padding: 1.25rem;
+  z-index: 50;
+}
+.overlay.overlay--open {
+  display: flex;
+}
+.modal {
+  background: var(--bg);
+  width: 100%;
+  max-width: 30rem;
+  max-height: 92vh; /* fallback for browsers without dvh support */
+  max-height: 92dvh; /* mobile Safari sizes vh against the toolbar-collapsed viewport, not what's
+    actually visible — dvh tracks the real visible area, so the modal doesn't compute itself
+    taller than the actual screen (which was blocking its own overflow-y:auto from ever kicking
+    in, and pushing the title off the top when centered) */
+  overflow-y: auto;
+  border-radius: 20px;
+  padding: 0 1.25rem 1.75rem;
+  border: 1.2px solid var(--fg-lighter);
+  box-shadow: 0 10px 40px rgba(0, 0, 0, 0.25);
+}
+/* Sticky, translucent/blurred title bar (same idea as the portfolio site's own header) — pulled
+   back out to the modal's full width via negative margin (since .modal itself now has no top
+   padding, that space lives here instead), so it reads as a proper bar across the top rather than
+   an inset title, and stays pinned while the rest of the popup scrolls underneath it. */
+.modal-head {
+  position: sticky;
+  top: 0;
+  z-index: 2;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin: 0 -1.25rem 0.9rem;
+  padding: 1.1rem 1.25rem 0.9rem;
+  background: rgba(255, 255, 255, 0.55);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border-radius: 20px 20px 0 0;
+  box-shadow: 0 6px 12px -4px rgba(0, 0, 0, 0.12);
+}
+.modal-head h2 {
+  font-size: 1.05rem;
+  margin: 0;
+  font-weight: 600;
+}
+.close-x {
+  background: none;
+  border: none;
+  font-size: 1.6rem;
+  color: var(--fg-light);
+  cursor: pointer;
+  padding: 0.25rem 0.5rem;
+  line-height: 1;
+}
+
+/* Full-screen popup on mobile instead of a centered card — a small card floating in the middle
+   of a small screen behaves oddly (cramped, awkward margins, dead space around it); a full sheet
+   is the more natural mobile pattern and matches how the sticky blurred header is meant to read
+   (a real top bar, not a rounded card corner). */
+@media (max-width: 480px) {
+  .overlay {
+    padding: 0;
+  }
+  .modal {
+    max-width: none;
+    max-height: none;
+    height: 100%;
+    height: 100dvh;
+    border-radius: 0;
+    border: none;
+    box-shadow: none;
+  }
+  .modal-head {
+    border-radius: 0;
+  }
+}
+
+.photo-box {
+  border: 1.2px solid var(--fg-lighter);
+  border-radius: 14px;
+  padding: 0.6rem;
+  margin-bottom: 1rem;
+}
+.photo-frame {
+  position: relative;
+  width: 100%;
+  aspect-ratio: 4 / 3;
+  background: #00000008;
+  border-radius: 10px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+}
+.photo-frame img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+.photo-frame .ph-empty {
+  color: var(--fg-light);
+  font-size: 0.75rem;
+}
+.photo-nav {
+  position: absolute;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 1.7rem;
+  height: 1.7rem;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.85);
+  color: var(--fg);
+  border: none;
+  font-size: 0.9rem;
+  cursor: pointer;
+}
+.photo-nav--prev {
+  left: 0.5rem;
+}
+.photo-nav--next {
+  right: 0.5rem;
+}
+.photo-meta {
+  margin-top: 0.5rem;
+  font-size: 0.7rem;
+  color: var(--fg-light);
+}
+.upload-btn {
+  margin-top: 0.5rem;
+  width: 100%;
+  background: var(--primary);
+  color: #fff;
+  border: none;
+  padding: 0.55rem;
+  border-radius: 8px;
+  font-size: 0.82rem;
+  font-weight: 600;
+  cursor: pointer;
+  font-family: inherit;
+}
+
+.field {
+  margin-bottom: 0.75rem;
+}
+.field label {
+  display: block;
+  font-size: 0.68rem;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: var(--fg-light);
+  margin-bottom: 0.25rem;
+  font-weight: 600;
+}
+.field input[type="text"],
+.field input[type="date"],
+.field select,
+.field textarea {
+  width: 100%;
+  border: 1.2px solid var(--fg-lighter);
+  border-radius: 8px;
+  padding: 0.55rem 0.6rem;
+  /* 16px, not the site's usual 0.85rem (13.6px) — iOS Safari auto-zooms the whole page on focus
+     for any input under 16px, and (per the bug report) doesn't reliably zoom back out on blur.
+     Applies on desktop too, not just inside a mobile media query, since there's no reason for
+     these specific fields to be smaller there either. */
+  font-size: 16px;
+  font-family: inherit;
+  background: var(--bg);
+  color: var(--fg);
+}
+.field textarea {
+  min-height: 4.2rem;
+  resize: none; /* height is set by JS (auto-grow to fit content) instead of dragging */
+  overflow-y: hidden; /* no internal scrollbar fighting the auto-grow — the box itself grows */
+}
+/* No outer box here — each YYYY/MM/DD input keeps its own normal bordered look (inherited from
+   .field input[type="text"] above; a .date-parts input rule trying to strip that per-input border
+   lost to that rule's higher specificity, which is what caused the earlier doubled-border look),
+   just sized to its own digit count and laid out in a row with "/" between. */
+.date-parts {
+  display: flex;
+  align-items: center;
+  gap: 0.35rem;
+}
+.date-parts input {
+  text-align: left;
+}
+.date-parts__y {
+  width: 3.6rem;
+}
+.date-parts__m,
+.date-parts__d {
+  width: 2.6rem;
+}
+.date-parts__sep {
+  color: var(--fg-lighter);
+}
+.field-value {
+  font-size: 0.85rem;
+  padding: 0.55rem 0;
+  min-height: 1.3rem;
+}
+.field-value--empty {
+  color: var(--fg-lighter);
+}
+.status-chart {
+  width: 100%;
+  height: auto;
+  display: block;
+}
+
+.status-row {
+  display: flex;
+  gap: 0.4rem;
+  flex-wrap: wrap;
+}
+.status-chip {
+  flex: 1;
+  min-width: 3.6rem;
+  border: 2px solid transparent;
+  border-radius: 8px;
+  padding: 0.5rem 0.25rem;
+  font-size: 0.68rem;
+  font-weight: 700;
+  color: var(--fg);
+  text-align: center;
+  cursor: pointer;
+  font-family: inherit;
+  opacity: 0.55;
+  transition: opacity 0.15s ease;
+}
+.status-chip--selected {
+  /* border-color set inline per chip (see app.js) — matches that specific status's own
+     saturated outline color instead of one uniform color for every status. */
+  opacity: 1;
+}
+.status-chip:disabled {
+  cursor: default;
+}
+
+.save-note {
+  font-size: 0.7rem;
+  color: var(--fg-light);
+  text-align: center;
+  margin-top: 0.4rem;
+  min-height: 0.9rem;
+}
