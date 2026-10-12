@@ -875,7 +875,8 @@ body[data-md-color-scheme="slate"] .dkh-hero__sub {
 /* The paperclip-emoji "source" links in "Some Things I Believe" aren't text, so underlining them
    like the other .dkh-box__list links doesn't read the same way — no underline for these. */
 .dkh-box__list a.dkh-box__list-icon-link,
-.dkh-countdown__label a.dkh-box__list-icon-link {
+.dkh-countdown__label a.dkh-box__list-icon-link,
+.dkh-hero__sub a.dkh-box__list-icon-link {
   text-decoration: none;
 }
 

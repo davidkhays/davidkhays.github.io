@@ -7,7 +7,8 @@ hide_nav: true
   <h1 class="dkh-hero__heading">Hi! I'm David, a <span id="dkh-typed" class="dkh-hero__typed"></span></h1>
   <p class="dkh-hero__sub">
     I spent my formative years in Tokyo, navigated adolescence in Hawai'i, then moved to the UK to study the brain and behavior. I'm interested in all aspects of the human condition, but especially the neurobiology of reward and how it can be usurped — by disease and by design.<br><br>
-    <b>October 2026:</b> As my priorities continue to shift, I'm currently taking a break from maintaining this site. So, I've temporarily removed the menu bar with my subpages. If you're still interested later on, I hope you'll come back and can see what I've been working on.
+    <b>October 2026:</b> As my priorities continue to shift, I'm currently taking a break from maintaining this site. So, I've temporarily removed the menu bar with my subpages. If you're still interested later on, I hope you'll come back and can see what I've been working on.<br><br>
+    "Twenty years from now you will be more disappointed by the things that you didn’t do than by the ones you did do. So throw off the bowlines. Sail away from the safe harbor. Catch the trade winds in your sails. <b>Explore. Dream. Discover.</b>" –Sarah Frances Brown <a href="https://www.amazon.co.uk/P-S-Love-You-Jackson-Brown/dp/1558538429" target="_blank" rel="noopener noreferrer" class="dkh-box__list-icon-link">📎</a>
   </p>
 </section>
 
