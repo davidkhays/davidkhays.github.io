@@ -7,8 +7,7 @@ hide_nav: true
   <h1 class="dkh-hero__heading">Hi! I'm David, a <span id="dkh-typed" class="dkh-hero__typed"></span></h1>
   <p class="dkh-hero__sub">
     I spent my formative years in Tokyo, navigated adolescence in Hawai'i, then moved to the UK to study the brain and behavior. I'm interested in all aspects of the human condition, but especially the neurobiology of reward and how it can be usurped — by disease and by design.<br><br>
-    As my priorities continue to shift, I'm currently taking a break from maintaining this site. If you're still interested later on, I hope you'll come back and can see what I've been working on. <br><br>
-    In the meantime, feel free to reach out! You can find me at contact[at]davidkhays.com :)
+    <b>October 2026:</b> As my priorities continue to shift, I'm currently taking a break from maintaining this site. So, I've temporarily removed the menu bar with my subpages. If you're still interested later on, I hope you'll come back and can see what I've been working on.
   </p>
 </section>
 
